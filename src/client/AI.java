@@ -1,9 +1,6 @@
 package client;
 
-import client.model.BeetleType;
-import client.model.Cell;
-import client.model.CellState;
-import client.model.Move;
+import client.model.*;
 
 import java.util.Random;
 
@@ -19,7 +16,11 @@ import java.util.Random;
  */
 public class AI {
 
-    public static void distance(){
+    public static void distance(Beetle a , int rowDest , int colDest){
+        int t = 0;
+        int rowDef = Math.abs(rowDest - a.getRow());
+        int colDef = Math.abs(colDest - a.getColumn());
+        t += row
 
     }
 

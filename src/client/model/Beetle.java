@@ -1,5 +1,7 @@
 package client.model;
 
+import java.util.Random;
+
 public class Beetle extends Entity {
     private Direction direction;
     private BeetleType beetleType;
@@ -90,5 +92,10 @@ public class Beetle extends Entity {
 
     public boolean has_winge() {
         return (queen == 1);
+    }
+
+    public int getPower(){
+        Random random = new Random();
+        return random.nextInt();
     }
 }
