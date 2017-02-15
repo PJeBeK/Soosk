@@ -16,8 +16,15 @@ import java.util.Random;
  */
 public class AI {
 
-    //Todo
-    public static int distance(Map map , Beetle beetle , int rowDest , int colDest){
+    static World game;
+
+    public static int distance(Beetle beetle1, Beetle beetle2){
+        return distance(beetle1, beetle2.getRow(), beetle2.getColumn());
+    }
+
+    //Todo: directions need to be taken into account
+    public static int distance(Beetle beetle , int rowDest , int colDest){
+        Map map = game.getMap();
         int minMov = 0;
         int colDef;
         int rowDef;
@@ -36,7 +43,23 @@ public class AI {
 
     }
 
+    //Todo: has bigs for dis=0
+    public static double score(Beetle a, Beetle b){
+        if(a.getPower() > 2 * b.getPower()){
+            return 1 / distance(a, b);
+        }
+        if(a.getPower() > b.getPower()){
+            return (a.getPower() - b.getPower()) / (b.getPower() * distance(a , b));
+        }
+        if(a.getPower() > 0.5 * b.getPower()){
+            return (a.getPower() - b.getPower()) / (a.getPower() * distance(a , b));
+        }
+        return -1 / distance(a , b);
+    }
+
+
     public void doTurn(World game) {
+        AI.game = game;
         // fill this method, we've presented a stupid AI for example!
         System.out.println(game.getCurrentTurn());
         Random rand = new Random();
