@@ -19,7 +19,9 @@ import java.util.Random;
  */
 public class AI {
 
-    
+    public static void distance(){
+
+    }
 
     public void doTurn(World game) {
         // fill this method, we've presented a stupid AI for example!
