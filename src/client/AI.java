@@ -16,11 +16,23 @@ import java.util.Random;
  */
 public class AI {
 
-    public static void distance(Beetle a , int rowDest , int colDest){
-        int t = 0;
-        int rowDef = Math.abs(rowDest - a.getRow());
-        int colDef = Math.abs(colDest - a.getColumn());
-        t += row
+    //Todo
+    public static int distance(Map map , Beetle beetle , int rowDest , int colDest){
+        int minMov = 0;
+        int colDef;
+        int rowDef;
+
+        int move;
+        colDef = colDest - beetle.getColumn();
+        rowDef = rowDest - beetle.getRow();
+        if(colDef < 0){
+            colDef += map.getWidth();
+        }
+        if(rowDef < 0){
+            rowDef += map.getHeight();
+        }
+
+        return Math.min(rowDef, map.getHeight() - 1 - rowDef) + Math.min(colDef, map.getWidth() - 1 - colDef);
 
     }
 
