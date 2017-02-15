@@ -18,6 +18,12 @@ public class AI {
 
     static World game;
 
+    //calculates the score
+    public static void calScore(Beetle beetle, Move move, Beetle beetle2){
+
+    }
+
+    //this is useless
     public static int distance(Beetle beetle1, Beetle beetle2){
         return distance(beetle1, beetle2.getRow(), beetle2.getColumn());
     }
@@ -43,7 +49,7 @@ public class AI {
 
     }
 
-    //Todo: has bigs for dis=0
+    //Todo: has bugs for dis=0, can't use distance
     public static double score(Beetle a, Beetle b){
         if(a.getPower() > 2 * b.getPower()){
             return 1 / distance(a, b);
