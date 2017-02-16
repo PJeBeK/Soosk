@@ -25,35 +25,75 @@ public class AI {
     static int[][][][][][] distances;
 
     //calculates the score
-    public static void calScore(Beetle beetle, Move move, Beetle beetle2){
-
-    }
-
-    //this is useless
-    public static int distance(Beetle beetle1, Beetle beetle2){
-        return distance(beetle1, beetle2.getRow(), beetle2.getColumn());
-    }
-
-    //Todo: directions need to be taken into account
-    public static int distance(Beetle beetle , int rowDest , int colDest){
-        Map map = game.getMap();
-        int minMov = 0;
-        int colDef;
-        int rowDef;
-
-        int move;
-        colDef = colDest - beetle.getColumn();
-        rowDef = rowDest - beetle.getRow();
-        if(colDef < 0){
-            colDef += map.getWidth();
+    public static double calScore(Beetle beetle, Move move, Beetle beetle2){
+        int INF = 1000;
+        int dis = 0;
+        if (move.getValue() != 1){
+            int directionValue = 0;
+            switch (move.getValue()){
+                case 0:
+                    directionValue = (beetle.getDirection().getValue() + 3) %4;
+                    break;
+                case 2:
+                    directionValue = (beetle.getDirection().getValue() + 1) %4;
+                    break;
+            }
+            Direction newDir = null;
+            switch (directionValue){
+                case 0:
+                    newDir = Direction.Right;
+                    break;
+                case 1:
+                    newDir = Direction.Up;
+                    break;
+                case 2:
+                    newDir = Direction.Left;
+                    break;
+                case 3:
+                    newDir = Direction.Down;
+                    break;
+            }
+            dis = distance(beetle.getRow(), beetle.getColumn(), newDir, beetle2.getRow(), beetle2.getColumn());
         }
-        if(rowDef < 0){
-            rowDef += map.getHeight();
+        else if (move.getValue() == 1){
+            switch (beetle.getDirection()){
+                case Right:
+                    dis = distance(beetle.getRow(), beetle.getColumn()+1, beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    break;
+                case Left:
+                    dis = distance(beetle.getRow(), beetle.getColumn()-1, beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    break;
+                case Up:
+                    dis = distance(beetle.getRow()-1, beetle.getColumn(), beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    break;
+                case Down:
+                    dis = distance(beetle.getRow()+1, beetle.getColumn(), beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    break;
+            }
         }
 
-        return Math.min(rowDef, map.getHeight() - 1 - rowDef) + Math.min(colDef, map.getWidth() - 1 - colDef);
-
+        if(beetle.getPower() > 2 * beetle2.getPower()){
+            if (dis == 0)
+                return INF;
+            return 1 / dis;
+        }
+        else if(beetle.getPower() > beetle2.getPower()){
+            if (dis == 0)
+                return INF;
+            return (beetle.getPower() - beetle2.getPower()) / (beetle2.getPower() * dis);
+        }
+        else if(beetle.getPower() > 0.5 * beetle2.getPower()){
+            if (dis == 0)
+                return -INF;
+            return (beetle.getPower() - beetle2.getPower()) / (beetle.getPower() * dis);
+        }
+        else{
+            if (dis == 0)
+                return -INF;
+            return -1 / dis;
+        }
     }
+
 
     public static void setDistances(){
         int height = game.getMap().getHeight();
@@ -121,19 +161,6 @@ public class AI {
         return dist;
     }
 
-    //Todo: has bugs for dis=0, can't use distance
-    public static double score(Beetle a, Beetle b){
-        if(a.getPower() > 2 * b.getPower()){
-            return 1 / distance(a, b);
-        }
-        if(a.getPower() > b.getPower()){
-            return (a.getPower() - b.getPower()) / (b.getPower() * distance(a , b));
-        }
-        if(a.getPower() > 0.5 * b.getPower()){
-            return (a.getPower() - b.getPower()) / (a.getPower() * distance(a , b));
-        }
-        return -1 / distance(a , b);
-    }
 
 
     public void doTurn(World game) {
