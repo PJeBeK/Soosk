@@ -60,6 +60,8 @@ public class AI {
         int width = game.getMap().getWidth();
         distances = new int[height][width][4][height][width][4];
         Node[][][] nodes = new Node[height][width][4];
+        Node.setWidth(width);
+        Node.setHeight(height);
         for (int rowSrc = 0;rowSrc < height; rowSrc++){
             for (int colSrc = 0; colSrc < width; colSrc++){
                 for (int dir = 0;dir < 4;dir++){
@@ -158,7 +160,8 @@ public class AI {
             for (int j = 0; j < 2; j++) {
                 for (int k = 0; k < 3; k++) {
                     Random r = new Random();
-                    int kk = r.nextInt() % 3;
+                    int kk = r.nextInt() % 20;
+                    if (kk >= 3) kk =1;
                     while(kk<0) kk+=3;
                     game.changeStrategy(BeetleType.LOW, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[kk]);
                     game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[kk]);
@@ -181,6 +184,8 @@ class Node{
     private static int level;
     private Boolean isVisited;
     private int lbl;
+    private static int width;
+    private static int height;
 
     Node(int row , int col , Direction dir){
         this.row = row;
@@ -208,6 +213,10 @@ class Node{
     public Boolean getIsVisited() {return this.isVisited;}
 
     public void resetIsVisited() {this.isVisited = false;}
+
+    public static void setWidth(int width) {Node.width = width;}
+
+    public static void setHeight(int height) {Node.height = height;}
 
     public static void reset(){
         queue = new LinkedList<>();
@@ -237,17 +246,17 @@ class Node{
         if (a.getRow() == b.getRow() && a.getColumn() == b.getColumn()){
             return (a.getDirection().getValue() + b.getDirection().getValue()) %2 == 1;
         }
-        if (a.getDirection() == Direction.Down){
-            return  (a.getRow() == (b.getRow() + 1) && a.getColumn() == b.getColumn());
+        if (a.getDirection() == Direction.Down && b.getDirection() == Direction.Down){
+            return  (a.getRow() == (b.getRow() + 1) % Node.height && a.getColumn() == b.getColumn());
         }
-        if (a.getDirection() == Direction.Up){
-            return  (a.getRow() == (b.getRow() - 1) && a.getColumn() == b.getColumn());
+        if (a.getDirection() == Direction.Up && b.getDirection() == Direction.Up){
+            return  (a.getRow() == (b.getRow() + Node.height - 1) % Node.height && a.getColumn() == b.getColumn());
         }
-        if (a.getDirection() == Direction.Left){
-            return  (a.getRow() == (b.getRow()) && a.getColumn() == b.getColumn() - 1);
+        if (a.getDirection() == Direction.Left && b.getDirection() == Direction.Left){
+            return  (a.getRow() == (b.getRow()) && a.getColumn() == (b.getColumn() + Node.width - 1) % Node.width);
         }
-        if (a.getDirection() == Direction.Right){
-            return  (a.getRow() == (b.getRow()) && a.getColumn() == b.getColumn() + 1);
+        if (a.getDirection() == Direction.Right && b.getDirection() == Direction.Right){
+            return  (a.getRow() == (b.getRow()) && a.getColumn() == (b.getColumn() + 1) % Node.width);
         }
         return false;
     }
