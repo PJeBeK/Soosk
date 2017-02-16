@@ -2,6 +2,9 @@ package client;
 
 import client.model.*;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 
 /**
@@ -14,9 +17,12 @@ import java.util.Random;
  * world!
  * See World interface for more details.
  */
+
+
 public class AI {
 
     static World game;
+    static int[][][][][][] distances;
 
     //calculates the score
     public static void calScore(Beetle beetle, Move move, Beetle beetle2){
@@ -49,6 +55,70 @@ public class AI {
 
     }
 
+    public static void setDistances(){
+        int height = game.getMap().getHeight();
+        int width = game.getMap().getWidth();
+        distances = new int[height][width][4][height][width][4];
+        Node[][][] nodes = new Node[height][width][4];
+        for (int rowSrc = 0;rowSrc < height; rowSrc++){
+            for (int colSrc = 0; colSrc < width; colSrc++){
+                for (int dir = 0;dir < 4;dir++){
+                    nodes[rowSrc][colSrc][dir] = new Node(rowSrc , colSrc , Direction.values()[dir]);
+                }
+            }
+        }
+        for (int rowSrc = 0;rowSrc < height; rowSrc++){
+            for (int colSrc = 0; colSrc < width; colSrc++){
+                for (int dir = 0;dir < 4;dir++){
+                    for (int i = 0;i < height;i++){
+                        for (int j = 0; j < width; j++){
+                            for (int k = 0;k < 4;k++){
+                                if (Node.isNeig(nodes[rowSrc][colSrc][dir] , nodes[i][j][k])){
+                                    nodes[rowSrc][colSrc][dir].addNeig(nodes[i][j][k]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (int rowSrc = 0;rowSrc < height; rowSrc++){
+            for (int colSrc = 0; colSrc < width; colSrc++){
+                for (int dir = 0;dir < 4;dir++){
+                    Node.reset();
+                    for (int i = 0;i < height;i++){
+                        for (int j = 0; j < width; j++){
+                            for (int k = 0;k < 4;k++){
+                                nodes[i][j][k].resetIsVisited();
+                            }
+                        }
+                    }
+                    Node.queuePush(nodes[rowSrc][colSrc][dir]);
+                    while(!Node.isQueueEmpty()){
+                        Node a = Node.pull();
+                        a.bfs();
+                    }
+                    for (int i = 0;i < height;i++){
+                        for (int j = 0; j < width; j++){
+                            for (int k = 0;k < 4;k++){
+                                distances[rowSrc][colSrc][dir][i][j][k] = nodes[i][j][k].getLabel();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    public static int distance(int rowSrc , int colSrc , Direction dirSrc , int rowDest , int colDest){
+        int dist = distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][0];
+        dist = Math.min(dist , distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][1]);
+        dist = Math.min(dist , distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][2]);
+        dist = Math.min(dist , distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][3]);
+        return dist;
+    }
+
     //Todo: has bugs for dis=0, can't use distance
     public static double score(Beetle a, Beetle b){
         if(a.getPower() > 2 * b.getPower()){
@@ -74,6 +144,7 @@ public class AI {
         Cell[][] cells = game.getMap().getCells();
 
         if (game.getCurrentTurn() == 0) {
+            setDistances();
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 2; j++) {
                     for (int k = 0; k < 3; k++) {
@@ -98,4 +169,100 @@ public class AI {
 
     }
 
+}
+
+class Node{
+    private int row;
+    private int col;
+    private Direction dir;
+    private ArrayList<Node> negs;
+    private static LinkedList<Node> queue;
+    private static LinkedList<Node> newQueue;
+    private static int level;
+    private Boolean isVisited;
+    private int lbl;
+
+    Node(int row , int col , Direction dir){
+        this.row = row;
+        this.col = col;
+        this.dir = dir;
+        negs = new ArrayList<Node>();
+    }
+
+    public int getRow(){
+        return this.row;
+    }
+
+    public int getColumn(){
+        return this.col;
+    }
+
+    public Direction getDirection(){
+        return this.dir;
+    }
+
+    public int getLabel(){
+        return this.lbl;
+    }
+
+    public Boolean getIsVisited() {return this.isVisited;}
+
+    public void resetIsVisited() {this.isVisited = false;}
+
+    public static void reset(){
+        queue = new LinkedList<>();
+        newQueue = new LinkedList<>();
+        level = 0;
+    }
+
+    public void bfs(){
+        if (isVisited) {
+            return ;
+        }
+        isVisited = true;
+        lbl = level;
+        for (Node neg : negs) {
+            if (!neg.getIsVisited()){
+                newQueue.push(neg);
+            }
+        }
+        if (queue.size() == 0){
+            queue = newQueue;
+            newQueue = new LinkedList<>();
+            level++;
+        }
+    }
+
+    public static Boolean isNeig(Node a , Node b){ //can move from a to b
+        if (a.getRow() == b.getRow() && a.getColumn() == b.getColumn()){
+            return (a.getDirection().getValue() + b.getDirection().getValue()) %2 == 1;
+        }
+        if (a.getDirection() == Direction.Down){
+            return  (a.getRow() == (b.getRow() + 1) && a.getColumn() == b.getColumn());
+        }
+        if (a.getDirection() == Direction.Up){
+            return  (a.getRow() == (b.getRow() - 1) && a.getColumn() == b.getColumn());
+        }
+        if (a.getDirection() == Direction.Left){
+            return  (a.getRow() == (b.getRow()) && a.getColumn() == b.getColumn() - 1);
+        }
+        if (a.getDirection() == Direction.Right){
+            return  (a.getRow() == (b.getRow()) && a.getColumn() == b.getColumn() + 1);
+        }
+        return false;
+    }
+
+    public void addNeig(Node a){
+        this.negs.add(a);
+    }
+
+    public static Boolean isQueueEmpty(){return queue.isEmpty();}
+
+    public static void queuePush(Node a){
+        queue.push(a);
+    }
+
+    public static Node pull(){
+        return queue.removeFirst();
+    }
 }
