@@ -2,10 +2,8 @@ package client;
 
 import client.model.*;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Random;
+import java.security.PublicKey;
+import java.util.*;
 
 /**
  * AI class.
@@ -161,7 +159,12 @@ public class AI {
         return dist;
     }
 
-
+    public static Comparator<tuple> statesComparator = new Comparator<tuple>() {
+        @Override
+        public int compare(tuple tuple, tuple t1) {
+            return 0;
+        }
+    }
 
     public void doTurn(World game) {
         AI.game = game;
@@ -183,18 +186,8 @@ public class AI {
                 }
             }
         } else {
-            for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 2; j++) {
-                for (int k = 0; k < 3; k++) {
-                    Random r = new Random();
-                    int kk = r.nextInt() % 20;
-                    if (kk >= 3) kk =1;
-                    while(kk<0) kk+=3;
-                    game.changeStrategy(BeetleType.LOW, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[kk]);
-                    game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[kk]);
-                }
-            }
-        }
+            List states = new ArrayList(36);
+            Arrays.sort(states, new states);
         }
 
     }
@@ -300,5 +293,19 @@ class Node{
 
     public static Node pull(){
         return queue.removeFirst();
+    }
+}
+
+class Tuple{
+    private int X, Y, Z;
+    public Tuple(){
+        X = 0;
+        Y = 0;
+        Z = 0;
+    }
+    public Tuple(int X, int Y, int Z){
+        this.X = X;
+        this.Y = Y;
+        this.Z = Z;
     }
 }
