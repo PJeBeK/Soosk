@@ -94,7 +94,7 @@ public class AI {
         }
     }
 
-    public static double calFinalScore(Beetle beetle, Move move){
+    public static double calBeetleScore(Beetle beetle, Move move){
         Cell[] cells = game.getMap().getOppCells();
         double ans = 0;
         for (Cell c: cells) {
