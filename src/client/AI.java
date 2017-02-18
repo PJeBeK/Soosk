@@ -278,16 +278,16 @@ class Node{
             return (a.getDirection().getValue() + b.getDirection().getValue()) %2 == 1;
         }
         if (a.getDirection() == Direction.Down && b.getDirection() == Direction.Down){
-            return  (a.getRow() == (b.getRow() + 1) % Node.height && a.getColumn() == b.getColumn());
-        }
-        if (a.getDirection() == Direction.Up && b.getDirection() == Direction.Up){
             return  (a.getRow() == (b.getRow() + Node.height - 1) % Node.height && a.getColumn() == b.getColumn());
         }
+        if (a.getDirection() == Direction.Up && b.getDirection() == Direction.Up){
+            return  (a.getRow() == (b.getRow() + 1) % Node.height && a.getColumn() == b.getColumn());
+        }
         if (a.getDirection() == Direction.Left && b.getDirection() == Direction.Left){
-            return  (a.getRow() == (b.getRow()) && a.getColumn() == (b.getColumn() + Node.width - 1) % Node.width);
+            return  (a.getRow() == (b.getRow()) && a.getColumn() == (b.getColumn() + 1) % Node.width);
         }
         if (a.getDirection() == Direction.Right && b.getDirection() == Direction.Right){
-            return  (a.getRow() == (b.getRow()) && a.getColumn() == (b.getColumn() + 1) % Node.width);
+            return  (a.getRow() == (b.getRow()) && a.getColumn() == (b.getColumn() + Node.width - 1) % Node.width);
         }
         return false;
     }
