@@ -163,13 +163,6 @@ public class AI {
         return dist;
     }
 
-    public static Comparator<tuple> statesComparator = new Comparator<tuple>() {
-        @Override
-        public int compare(tuple tuple, tuple t1) {
-            return 0;
-        }
-    }
-
     public void doTurn(World game) {
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
@@ -190,8 +183,10 @@ public class AI {
                 }
             }
         } else {
-            List states = new ArrayList(36);
-            Arrays.sort(states, new states);
+            List<State> states = new ArrayList<>(36);
+            for(int i=0;i<36;i++)
+                states.add(new State(i/18, (i/6)%3, (i/3)%2, i%3));
+            Arrays.sort(states, new StatesComparator());
         }
 
     }
@@ -300,16 +295,16 @@ class Node{
     }
 }
 
-class Tuple{
-    private int X, Y, Z;
-    public Tuple(){
-        X = 0;
-        Y = 0;
-        Z = 0;
+class State{
+    public CellState X, Y, Z;
+    public BeetleType type;
+    public State(int type, int X, int Y, int Z){
+        this.X = CellState.values()[X];
+        this.Y = CellState.values()[Y];
+        this.Z = CellState.values()[Z];
+        this.type = BeetleType.values()[type];
     }
-    public Tuple(int X, int Y, int Z){
-        this.X = X;
-        this.Y = Y;
-        this.Z = Z;
-    }
+}
+
+class StatesComparat implements Comparator<State>
 }
