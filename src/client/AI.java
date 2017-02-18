@@ -94,6 +94,10 @@ public class AI {
         }
     }
 
+    public static double calFinalScore(Beetle beetle, Move move){
+        return 0;
+    }
+
 
     public static void setDistances(){
         int height = game.getMap().getHeight();
