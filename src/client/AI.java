@@ -1,6 +1,7 @@
 package client;
 
 import client.model.*;
+import com.sun.org.apache.bcel.internal.generic.MONITORENTER;
 
 import java.security.PublicKey;
 import java.util.*;
@@ -21,6 +22,7 @@ public class AI {
 
     static World game;
     static int[][][][][][] distances;
+    static Cell[][] cells;
 
     //calculates the score
     public static double calScore(Beetle beetle, Move move, Beetle beetle2){
@@ -93,13 +95,13 @@ public class AI {
     }
 
     public static double calBeetleScore(Beetle beetle, Move move){
-        Cell[] cells = game.getMap().getOppCells();
+        Cell[] oppCells = game.getMap().getOppCells();
         double ans = 0;
-        for (Cell c: cells) {
+        for (Cell c: oppCells) {
             Beetle b = (Beetle) c.getBeetleEntity();
             ans += calScore(beetle, move, b);
         }
-        ans /= cells.length;
+        ans /= oppCells.length;
         return ans;
     }
 
@@ -170,30 +172,87 @@ public class AI {
         return dist;
     }
 
+    public static CellState beetleState(Beetle beetle)
+    {
+        if(beetle == null)
+            return CellState.Blank;
+        //Todo:fix!
+        else if(beetle.getTeam() == game.getTeamID())
+            return CellState.Ally;
+        return CellState.Enemy;
+    }
+
+    public static State cellState(Cell cell)
+    {
+        Beetle beetle = (Beetle) cell.getBeetleEntity();
+        Beetle X,Y,Z;
+        //Todo: asK :)
+        //TODO: Y has problem
+        int n=game.getMap().getHeight(), m=game.getMap().getWidth();
+        switch (beetle.getDirection()) {
+            case Right:
+                X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetleEntity();
+                Y = (Beetle) cells[cell.getX()][(cell.getY()+1)%m].getBeetleEntity();
+                Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetleEntity();
+                break;
+            case Left:
+                X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
+                Y = (Beetle) cells[cell.getX()][(cell.getY()+m-1)%m].getBeetleEntity();
+                Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
+                break;
+            case Up:
+                X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
+                Y = (Beetle) cells[(cell.getX()+n-1)%n][cell.getY()].getBeetleEntity();
+                Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetleEntity();
+                break;
+            default:
+                X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetleEntity();
+                Y = (Beetle) cells[(cell.getX()+1)%n][cell.getY()].getBeetleEntity();
+                Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
+                break;
+        }
+        return new State(beetle.getBeetleType(), beetleState(X), beetleState(Y), beetleState(Z));
+    }
+
+    public static double stateScore(State state, Move move)
+    {
+        double ret = 0;
+        Cell[] myCell = game.getMap().getMyCells();
+        for(int i=0;i<myCell.length;i++)
+            if(cellState(myCell[i]).compareTo(state) == 0)
+            {
+//TODO: fill
+            }
+        return ret;
+    }
+
     public void doTurn(World game) {
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
         System.out.println(game.getCurrentTurn());
-        Random rand = new Random();
 
 
-        Cell[][] cells = game.getMap().getCells();
+        cells = game.getMap().getCells();
 
-        if (game.getCurrentTurn() == 0) {
+        if (game.getCurrentTurn() == 0)
             setDistances();
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 2; j++) {
-                    for (int k = 0; k < 3; k++) {
-                        game.changeStrategy(BeetleType.LOW, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[1]);
-                        game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[1]);
-                    }
+
+        State[] states = new State[36];
+        for(int i=0;i<36;i++)
+            states[i] = new State(i/18, (i/6)%3, (i/3)%2, i%3);
+        Arrays.sort(states, new StatesComparator());
+        for(int i=0;i<36;i++) {
+            Move bestMove = Move.values()[0];
+            double MAX = stateScore(states[i], Move.values()[0]);
+            //Todo: effect previous moves
+            for (int j = 1; j < 3; j++) {
+                double tmp = stateScore(states[i], Move.values()[j]);
+                if (tmp > MAX) {
+                    MAX = tmp;
+                    bestMove = Move.values()[j];
                 }
             }
-        } else {
-            List<State> states = new ArrayList<>(36);
-            for(int i=0;i<36;i++)
-                states.add(new State(i/18, (i/6)%3, (i/3)%2, i%3));
-            Arrays.sort(states, new StatesComparator());
+            game.changeStrategy(BeetleType.values()[i / 18], CellState.values()[(i / 6) % 3], CellState.values()[(i / 3) % 2], CellState.values()[i % 3], bestMove);
         }
 
     }
@@ -305,13 +364,39 @@ class Node{
 class State{
     public CellState X, Y, Z;
     public BeetleType type;
+
+    public State(BeetleType type, CellState X, CellState Y, CellState Z){
+        this.X = X;
+        this.Y = Y;
+        this.Z = Z;
+        this.type = type;
+    }
     public State(int type, int X, int Y, int Z){
         this.X = CellState.values()[X];
         this.Y = CellState.values()[Y];
         this.Z = CellState.values()[Z];
         this.type = BeetleType.values()[type];
     }
+
+    public int value(){
+        //Todo: fill this!
+        return 0;
+    }
+
+    @Override
+    public int compareTo(State state)
+    {
+        if(X == state.X && Y == state.Y && Z == state.Z && type == state.type)
+            return 0;
+        else
+            return 1;
+    }
 }
 
-class StatesComparat implements Comparator<State>
+class StatesComparator implements Comparator<State>{
+    @Override
+    public int compare(State s1, State s2)
+    {
+        return s2.value() - s1.value();
+    }
 }
