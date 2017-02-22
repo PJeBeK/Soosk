@@ -78,7 +78,29 @@ public class AI {
                     newDir = Direction.Down;
                     break;
             }
+            System.out.print("{");
+            System.out.print(beetle.getPosition().getX());
+            System.out.print(",");
+            System.out.print(beetle.getPosition().getY());
+            System.out.print(",");
+            System.out.print(beetle.getDirection().getValue());
+            System.out.print(",");
+            System.out.print(move.getValue());
+            System.out.print("}");
+
+            System.out.print("\t-->\t");
+
+            System.out.print("{");
+            System.out.print(beetle.getPosition().getX());
+            System.out.print(",");
+            System.out.print(beetle.getPosition().getY());
+            System.out.print(",");
+            System.out.print(newDir.getValue());
+            System.out.print("}");
             dis = distance(beetle.getPosition().getX(), beetle.getPosition().getY(), newDir, beetle2.getPosition().getX(), beetle2.getPosition().getY());
+            System.out.print("\t-->\t");
+            System.out.print(dis);
+            System.out.println();
         }
         else if (move.getValue() == 1){
             switch (beetle.getDirection()){
@@ -192,6 +214,39 @@ public class AI {
                     while(!Node.isQueueEmpty()){
                         Node a = Node.pull();
                         a.bfs();
+                        if (Node.queue.size() == 0){
+                            Node.queue = Node.newQueue;
+                            Node.newQueue = new LinkedList<>();
+                            Node.level++;
+                        }
+//                        if(rowSrc == 0 && colSrc == 4 && dir == 2) {
+//                            System.out.println("level:");
+//                            System.out.println(Node.level);
+//                            System.out.println("Queue:");
+//                            for (Node n : Node.queue) {
+//                                System.out.print("(");
+//                                System.out.print(n.getRow());
+//                                System.out.print(",");
+//                                System.out.print(n.getColumn());
+//                                System.out.print(",");
+//                                System.out.print(n.getDirection().getValue());
+//                                System.out.print(",");
+//                                System.out.print(n.getIsVisited());
+//                                System.out.println(")");
+//                            }
+//                            System.out.println("newQueue:");
+//                            for (Node n : Node.newQueue) {
+//                                System.out.print("(");
+//                                System.out.print(n.getRow());
+//                                System.out.print(",");
+//                                System.out.print(n.getColumn());
+//                                System.out.print(",");
+//                                System.out.print(n.getDirection().getValue());
+//                                System.out.print(",");
+//                                System.out.print(n.getIsVisited());
+//                                System.out.println(")");
+//                            }
+//                        }
                     }
                     for (int i = 0;i < height;i++){
                         for (int j = 0; j < width; j++){
@@ -203,16 +258,44 @@ public class AI {
                 }
             }
         }
-
+        for (int rowSrc = 0;rowSrc < height; rowSrc++){
+            for (int colSrc = 0; colSrc < width; colSrc++){
+                for (int dir = 0;dir < 4;dir++){
+                    for (int i = 0;i < height;i++){
+                        for (int j = 0; j < width; j++){
+                            for (int k = 0;k < 4;k++){
+                                if(!(i == 3 && j == 3 && colSrc == 4)) continue;
+                                System.out.print("{");
+                                System.out.print(rowSrc);
+                                System.out.print(",");
+                                System.out.print(colSrc);
+                                System.out.print(",");
+                                System.out.print(dir);
+                                System.out.print(",");
+                                System.out.print(i);
+                                System.out.print(",");
+                                System.out.print(j);
+                                System.out.print(",");
+                                System.out.print(k);
+                                System.out.print("\t-->");
+                                System.out.print(distances[rowSrc][colSrc][dir][i][j][k]);
+                                System.out.println("}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+//        System.out.println(1/0);
     }
 
     public static int distance(int rowSrc , int colSrc , Direction dirSrc , int rowDest , int colDest){
-        int c = colSrc;
-        colSrc = rowSrc;
-        rowSrc = c;
-        c = colDest;
-        colDest = rowDest;
-        rowDest = c;
+//        int c = colSrc;
+//        colSrc = rowSrc;
+//        rowSrc = c;
+//        c = colDest;
+//        colDest = rowDest;
+//        rowDest = c;
         int dist = distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][0];
         dist = Math.min(dist , distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][1]);
         dist = Math.min(dist , distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][2]);
@@ -286,7 +369,7 @@ public class AI {
 
     public static double stateScore(State state, Move move)
     {
-        System.out.println("$");
+        System.out.println("(");
         double ret = 0;
         Cell[] myCell = game.getMap().getMyCells();
         for(int i=0;i<myCell.length;i++){
@@ -297,6 +380,7 @@ public class AI {
                 ret += calBeetleScore((Beetle) ((myCell[i]).getBeetle()), move);
             }
         }
+        System.out.println(")");
         return ret;
     }
 
@@ -351,14 +435,17 @@ public class AI {
             double MAX = stateScore(states[i], Move.values()[1]);
             //Todo: effect previous moves
             for (int j = 0; j < 3; j++) {
-                System.out.println("#");
-                System.out.println(i);
-                System.out.println(j);
+
 //                if (j == 1){
 //                    continue;
 //                }
                 double tmp = stateScore(states[i], Move.values()[j]);
-                System.out.println(tmp);
+                if (states[i].X == CellState.Blank && states[i].Z==CellState.Blank && states[i].Y == CellState.Ally) {
+                    System.out.println("#");
+                    System.out.println(i);
+                    System.out.println(j);
+                    System.out.println(tmp);
+                }
                 if (tmp > MAX) {
                     MAX = tmp;
                     bestMove = Move.values()[j];
@@ -376,9 +463,9 @@ class Node{
     private int col;
     private Direction dir;
     private ArrayList<Node> negs;
-    private static LinkedList<Node> queue;
-    private static LinkedList<Node> newQueue;
-    private static int level;
+    public static LinkedList<Node> queue;
+    public static LinkedList<Node> newQueue;
+    public static int level;
     private Boolean isVisited;
     private int lbl;
     private static int width;
@@ -431,11 +518,6 @@ class Node{
             if (!neg.getIsVisited()){
                 newQueue.push(neg);
             }
-        }
-        if (queue.size() == 0){
-            queue = newQueue;
-            newQueue = new LinkedList<>();
-            level++;
         }
     }
 
