@@ -117,15 +117,15 @@ public class AI {
     }
 
     public static double calBeetleScore(Beetle beetle, Move move){
-        System.out.println("hooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooly shit");
+//        System.out.println("hooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooly shit");
         Cell[] oppCells = game.getMap().getOppCells();
         double ans = 0;
         for (Cell c: oppCells) {
             if (c == null)
                 continue;
             Beetle b = (Beetle) c.getBeetle();
-            System.out.println("^");
-            System.out.println(calScore(beetle, move, b));
+//            System.out.println("^");
+//            System.out.println(calScore(beetle, move, b));
             ans += calScore(beetle, move, b);
         }
         ans /= oppCells.length;
@@ -216,26 +216,48 @@ public class AI {
         //Todo: asK :)
         //TODO: Y has problem
         int n=game.getMap().getHeight(), m=game.getMap().getWidth();
+        int i;
         switch (beetle.getDirection()) {
+
             case Right:
                 X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetle();
                 Y = (Beetle) cells[cell.getX()][(cell.getY()+1)%m].getBeetle();
                 Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetle();
+                i = 1;
+                do{
+                    Y = (Beetle) cells[cell.getX()][(cell.getY()+i)%m].getBeetle();
+                    i++;
+                }while(Y == null);
                 break;
             case Left:
                 X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetle();
                 Y = (Beetle) cells[cell.getX()][(cell.getY()+m-1)%m].getBeetle();
                 Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetle();
+                i = 1;
+                do{
+                    Y = (Beetle) cells[cell.getX()][(cell.getY()+m-i)%m].getBeetle();
+                    i++;
+                }while(Y == null);
                 break;
             case Up:
                 X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetle();
                 Y = (Beetle) cells[(cell.getX()+n-1)%n][cell.getY()].getBeetle();
                 Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetle();
+                i = 1;
+                do{
+                    Y = (Beetle) cells[(cell.getX()+n-i)%n][cell.getY()].getBeetle();
+                    i++;
+                }while(Y == null);
                 break;
             default:
                 X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetle();
                 Y = (Beetle) cells[(cell.getX()+1)%n][cell.getY()].getBeetle();
                 Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetle();
+                i = 1;
+                do{
+                    Y = (Beetle) cells[(cell.getX()+i)%n][cell.getY()].getBeetle();
+                    i++;
+                }while(Y == null);
                 break;
         }
         return new State(beetle.getBeetleType(), beetleState(X), beetleState(Y), beetleState(Z));
@@ -267,11 +289,12 @@ public class AI {
         if (game.getCurrentTurn() == 0) {
             setDistances();
             strategies = new int[2][3][2][3];
-            for(int i = 0;i < 2;i++){
-                for(int j = 0;j < 2;j++){
-                    for(int k = 0;k < 2;k++){
-                        for(int l = 0;l < 2;l++){
+            for(int i = 0;i < 2;i++) {
+                for (int j = 0; j < 3; j++) {
+                    for (int k = 0; k < 2; k++) {
+                        for (int l = 0; l < 3; l++) {
                             strategies[i][j][k][l] = -1;
+                            AI.myChangeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.stepForward);
                         }
                     }
                 }
@@ -307,7 +330,7 @@ public class AI {
                     bestMove = Move.values()[j];
                 }
             }
-            AI.myChangeStrategy(BeetleType.values()[i / 18], CellState.values()[(i / 6) % 3], CellState.values()[(i / 3) % 2], CellState.values()[i % 3], bestMove);
+            AI.myChangeStrategy(states[i].type , states[i].X , states[i].Y , states[i].Z, bestMove);
         }
 
     }
