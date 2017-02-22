@@ -23,6 +23,18 @@ public class AI {
     private static World game;
     static int[][][][][][] distances;
     static Cell[][] cells;
+    static Move[][][][] strategies;
+
+    private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
+        if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == null){
+            game.changeStrategy(beetleType , x , y , z , move);
+        }else{
+            if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()].getValue() != move.getValue()){
+                game.changeStrategy(beetleType , x , y , z , move);
+            }
+        }
+        strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] = move;
+    }
 
     public static World getGame(){
         return game;
@@ -265,7 +277,7 @@ public class AI {
                     bestMove = Move.values()[j];
                 }
             }
-            game.changeStrategy(BeetleType.values()[i / 18], CellState.values()[(i / 6) % 3], CellState.values()[(i / 3) % 2], CellState.values()[i % 3], bestMove);
+            AI.myChangeStrategy(BeetleType.values()[i / 18], CellState.values()[(i / 6) % 3], CellState.values()[(i / 3) % 2], CellState.values()[i % 3], bestMove);
         }
 
     }
