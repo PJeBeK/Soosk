@@ -20,9 +20,13 @@ import java.util.LinkedList;
  */
 public class AI {
 
-    static World game;
+    private static World game;
     static int[][][][][][] distances;
     static Cell[][] cells;
+
+    public static World getGame(){
+        return game;
+    }
 
     //calculates the score
     public static double calScore(Beetle beetle, Move move, Beetle beetle2){
@@ -381,8 +385,16 @@ class State{
     }
 
     public int value(){
-        //Todo: fill this!
-        return 0;
+        World game = AI.getGame();
+        int ret = 0;
+        for (Cell c : game.getMap().getMyCells()){
+            if (c == null) continue;
+            if (this.compareTo(AI.cellState(c)) == 0){
+                int p = ((Beetle)(c.getBeetle())).getPower();
+                ret += p * p;
+            }
+        }
+        return ret;
     }
 
 
