@@ -218,11 +218,13 @@ public class AI {
     {
         double ret = 0;
         Cell[] myCell = game.getMap().getMyCells();
-        for(int i=0;i<myCell.length;i++)
+        for(int i=0;i<myCell.length;i++){
+            if (myCell[i] == null) continue;
             if(cellState(myCell[i]).compareTo(state) == 0)
             {
 //TODO: fill
             }
+        }
         return ret;
     }
 
