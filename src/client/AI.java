@@ -53,6 +53,7 @@ public class AI {
         int h = game.getMap().getHeight();
         double INF = 1000.0;
         int dis = 0;
+        int dis1 = 0;
         if (move.getValue() != 1){
             int directionValue = 0;
             switch (move.getValue()){
@@ -98,6 +99,7 @@ public class AI {
 //            System.out.print(newDir.getValue());
 //            System.out.print("}");
             dis = distance(beetle.getPosition().getX(), beetle.getPosition().getY(), newDir, beetle2.getPosition().getX(), beetle2.getPosition().getY());
+            dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY(), beetle2.getDirection() , beetle.getPosition().getX() , beetle.getPosition().getY());
 //            System.out.print("\t-->\t");
 //            System.out.print(dis);
 //            System.out.println();
@@ -106,19 +108,24 @@ public class AI {
             switch (beetle.getDirection()){
                 case Right:
                     dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w, beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
+                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w);
                     break;
                 case Left:
                     dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+w-1)%w, beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
+                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , beetle.getPosition().getX(), (beetle.getPosition().getY()+w-1)%w);
                     break;
                 case Up:
                     dis = distance((beetle.getPosition().getX()+h-1)%h, beetle.getPosition().getY(), beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
+                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , (beetle.getPosition().getX()+h-1)%h, beetle.getPosition().getY());
                     break;
                 case Down:
                     dis = distance((beetle.getPosition().getX()+1)%h, beetle.getPosition().getY(), beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
+                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , (beetle.getPosition().getX()+1)%h, beetle.getPosition().getY());
                     break;
             }
         }
         dis = dis * dis;
+        dis1 = dis1 * dis1;
         if(beetle.getPower() > 2 * beetle2.getPower()){
             if (dis == 0)
                 return INF * getKillingScore(beetle2);
@@ -134,14 +141,14 @@ public class AI {
             return 0.0;
         }
         else if(beetle.getPower() > 0.5 * beetle2.getPower()){
-            if (dis == 0)
+            if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
-            return getKillingScore(beetle) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle.getPower() * dis);
+            return getKillingScore(beetle) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle.getPower() * dis1);
         }
         else{
-            if (dis == 0)
+            if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
-            return -1.0 * getKillingScore(beetle) / dis;
+            return -1.0 * getKillingScore(beetle) / dis1;
         }
     }
 
@@ -168,6 +175,8 @@ public class AI {
         ans /= oppCells.length;
         return ans;
     }
+
+//    public static double calFoodScore(Beetle beetle)
 
 
     public static void setDistances(){
