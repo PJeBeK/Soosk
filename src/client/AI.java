@@ -24,8 +24,12 @@ public class AI {
     static int[][][][][][] distances;
     static Cell[][] cells;
 
+
+
     //calculates the score
     public static double calScore(Beetle beetle, Move move, Beetle beetle2){
+        int w = game.getMap().getWidth();
+        int h = game.getMap().getHeight();
         int INF = 1000;
         int dis = 0;
         if (move.getValue() != 1){
@@ -58,16 +62,16 @@ public class AI {
         else if (move.getValue() == 1){
             switch (beetle.getDirection()){
                 case Right:
-                    dis = distance(beetle.getRow(), beetle.getColumn()+1, beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    dis = distance(beetle.getRow(), (beetle.getColumn()+1)%w, beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
                     break;
                 case Left:
-                    dis = distance(beetle.getRow(), beetle.getColumn()-1, beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    dis = distance(beetle.getRow(), (beetle.getColumn()+w-1)%w, beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
                     break;
                 case Up:
-                    dis = distance(beetle.getRow()-1, beetle.getColumn(), beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    dis = distance((beetle.getRow()+h-1)%h, beetle.getColumn(), beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
                     break;
                 case Down:
-                    dis = distance(beetle.getRow()+1, beetle.getColumn(), beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
+                    dis = distance((beetle.getRow()+1)%h, beetle.getColumn(), beetle.getDirection(), beetle2.getRow(), beetle2.getColumn());
                     break;
             }
         }
@@ -98,6 +102,8 @@ public class AI {
         Cell[] oppCells = game.getMap().getOppCells();
         double ans = 0;
         for (Cell c: oppCells) {
+            if (c == null)
+                continue;
             Beetle b = (Beetle) c.getBeetle();
             ans += calScore(beetle, move, b);
         }
@@ -222,7 +228,7 @@ public class AI {
             if (myCell[i] == null) continue;
             if(cellState(myCell[i]).compareTo(state) == 0)
             {
-//TODO: fill
+                ret += calBeetleScore((Beetle) ((myCell[i]).getBeetle()), move);
             }
         }
         return ret;
@@ -244,10 +250,13 @@ public class AI {
             states[i] = new State(i/18, (i/6)%3, (i/3)%2, i%3);
         Arrays.sort(states, new StatesComparator());
         for(int i=0;i<36;i++) {
-            Move bestMove = Move.values()[0];
-            double MAX = stateScore(states[i], Move.values()[0]);
+            Move bestMove = Move.values()[1];
+            double MAX = stateScore(states[i], Move.values()[1]);
             //Todo: effect previous moves
-            for (int j = 1; j < 3; j++) {
+            for (int j = 0; j < 3; j++) {
+                if (j == 1){
+                    continue;
+                }
                 double tmp = stateScore(states[i], Move.values()[j]);
                 if (tmp > MAX) {
                     MAX = tmp;
