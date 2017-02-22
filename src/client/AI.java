@@ -26,6 +26,13 @@ public class AI {
     static int[][][][] strategies;
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
+        System.out.print("__!__");
+        System.out.print(beetleType.getValue());
+        System.out.print(x.getValue());
+        System.out.print(y.getValue());
+        System.out.print(z.getValue());
+        System.out.println(move.getValue());
+
         if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
         }else{
@@ -271,12 +278,14 @@ public class AI {
 
     public static double stateScore(State state, Move move)
     {
+        System.out.println("$");
         double ret = 0;
         Cell[] myCell = game.getMap().getMyCells();
         for(int i=0;i<myCell.length;i++){
             if (myCell[i] == null) continue;
             if(cellState(myCell[i]).compareTo(state) == 0)
             {
+                System.out.println(calBeetleScore((Beetle) ((myCell[i]).getBeetle()), move));
                 ret += calBeetleScore((Beetle) ((myCell[i]).getBeetle()), move);
             }
         }
@@ -292,21 +301,32 @@ public class AI {
 
         cells = game.getMap().getCells();
 
-        if (game.getCurrentTurn() == 0) {
+        if (strategies == null) {
             setDistances();
+            System.out.println("!3");
             strategies = new int[2][3][2][3];
             for(int i = 0;i < 2;i++) {
                 for (int j = 0; j < 3; j++) {
                     for (int k = 0; k < 2; k++) {
                         for (int l = 0; l < 3; l++) {
                             strategies[i][j][k][l] = -1;
-                            AI.myChangeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.stepForward);
+                            game.changeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.stepForward);
                         }
                     }
                 }
             }
             return;
         }
+        /*for(int i = 0;i < 2;i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 2; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        AI.myChangeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.stepForward);
+                    }
+                }
+            }
+        }*/
+
         for (Cell c : game.getMap().getMyCells()){
             if (c == null) continue;
             System.out.println("!");
@@ -478,7 +498,7 @@ class State{
 
     public int compareTo(State state)
     {
-        if(X == state.X && Y == state.Y && Z == state.Z && type == state.type)
+        if(X.getValue() == state.X.getValue() && Y.getValue() == state.Y.getValue() && Z.getValue() == state.Z.getValue() && type.getValue() == state.type.getValue())
             return 0;
         else
             return 1;
