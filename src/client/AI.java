@@ -96,16 +96,16 @@ public class AI {
                     break;
             }
         }
-
+        dis = dis * dis;
         if(beetle.getPower() > 2 * beetle2.getPower()){
             if (dis == 0)
-                return INF;
-            return 1.0 / dis;
+                return INF * getKillingScore(beetle2);
+            return getKillingScore(beetle2) * 1.0 / dis;
         }
         else if(beetle.getPower() > beetle2.getPower()){
             if (dis == 0)
-                return INF;
-            return ((double) (beetle.getPower() - beetle2.getPower())) / (beetle2.getPower() * dis);
+                return INF * getKillingScore(beetle2);
+            return getKillingScore(beetle2) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle2.getPower() * dis);
         }
         else if(beetle.getPower() == beetle2.getPower()){
             if (beetle.getPower() == 0) return 0.0;
@@ -113,13 +113,21 @@ public class AI {
         }
         else if(beetle.getPower() > 0.5 * beetle2.getPower()){
             if (dis == 0)
-                return -INF;
-            return ((double) (beetle.getPower() - beetle2.getPower())) / (beetle.getPower() * dis);
+                return -INF * getKillingScore(beetle);
+            return getKillingScore(beetle) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle.getPower() * dis);
         }
         else{
             if (dis == 0)
-                return -INF;
-            return -1.0 / dis;
+                return -INF * getKillingScore(beetle);
+            return -1.0 * getKillingScore(beetle) / dis;
+        }
+    }
+
+    public static double getKillingScore(Beetle beetle){
+        if (beetle.has_winge()){
+            return (double) game.getConstants().getKillQueenScore();
+        }else{
+            return (double) game.getConstants().getKillFishScore();
         }
     }
 
