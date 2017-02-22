@@ -192,6 +192,12 @@ public class AI {
     }
 
     public static int distance(int rowSrc , int colSrc , Direction dirSrc , int rowDest , int colDest){
+        int c = colSrc;
+        colSrc = rowSrc;
+        rowSrc = c;
+        c = colDest;
+        colDest = rowDest;
+        rowDest = c;
         int dist = distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][0];
         dist = Math.min(dist , distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][1]);
         dist = Math.min(dist , distances[rowSrc][colSrc][dirSrc.getValue()][rowDest][colDest][2]);
