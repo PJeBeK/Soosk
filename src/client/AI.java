@@ -1,17 +1,11 @@
 package client;
 
-import client.model.BeetleType;
-import client.model.Cell;
-import client.model.CellState;
-import client.model.Move;
-
-import java.util.Random;
-
 import client.model.*;
-import com.sun.org.apache.bcel.internal.generic.MONITORENTER;
 
-import java.security.PublicKey;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedList;
 
 
 /**
@@ -104,7 +98,7 @@ public class AI {
         Cell[] oppCells = game.getMap().getOppCells();
         double ans = 0;
         for (Cell c: oppCells) {
-            Beetle b = (Beetle) c.getBeetleEntity();
+            Beetle b = (Beetle) c.getBeetle();
             ans += calScore(beetle, move, b);
         }
         ans /= oppCells.length;
@@ -190,31 +184,31 @@ public class AI {
 
     public static State cellState(Cell cell)
     {
-        Beetle beetle = (Beetle) cell.getBeetleEntity();
+        Beetle beetle = (Beetle) cell.getBeetle();
         Beetle X,Y,Z;
         //Todo: asK :)
         //TODO: Y has problem
         int n=game.getMap().getHeight(), m=game.getMap().getWidth();
         switch (beetle.getDirection()) {
             case Right:
-                X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetleEntity();
-                Y = (Beetle) cells[cell.getX()][(cell.getY()+1)%m].getBeetleEntity();
-                Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetleEntity();
+                X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetle();
+                Y = (Beetle) cells[cell.getX()][(cell.getY()+1)%m].getBeetle();
+                Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetle();
                 break;
             case Left:
-                X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
-                Y = (Beetle) cells[cell.getX()][(cell.getY()+m-1)%m].getBeetleEntity();
-                Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
+                X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetle();
+                Y = (Beetle) cells[cell.getX()][(cell.getY()+m-1)%m].getBeetle();
+                Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetle();
                 break;
             case Up:
-                X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
-                Y = (Beetle) cells[(cell.getX()+n-1)%n][cell.getY()].getBeetleEntity();
-                Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetleEntity();
+                X = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+m-1)%m].getBeetle();
+                Y = (Beetle) cells[(cell.getX()+n-1)%n][cell.getY()].getBeetle();
+                Z = (Beetle) cells[(cell.getX()+n-1)%n][(cell.getY()+1)%m].getBeetle();
                 break;
             default:
-                X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetleEntity();
-                Y = (Beetle) cells[(cell.getX()+1)%n][cell.getY()].getBeetleEntity();
-                Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetleEntity();
+                X = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+1)%m].getBeetle();
+                Y = (Beetle) cells[(cell.getX()+1)%n][cell.getY()].getBeetle();
+                Z = (Beetle) cells[(cell.getX()+1)%n][(cell.getY()+m-1)%m].getBeetle();
                 break;
         }
         return new State(beetle.getBeetleType(), beetleState(X), beetleState(Y), beetleState(Z));
@@ -389,7 +383,7 @@ class State{
         return 0;
     }
 
-    @Override
+
     public int compareTo(State state)
     {
         if(X == state.X && Y == state.Y && Z == state.Z && type == state.type)
