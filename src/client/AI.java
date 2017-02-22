@@ -23,17 +23,17 @@ public class AI {
     private static World game;
     static int[][][][][][] distances;
     static Cell[][] cells;
-    static Move[][][][] strategies;
+    static int[][][][] strategies;
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
-        if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == null){
+        if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
         }else{
-            if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()].getValue() != move.getValue()){
+            if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] != move.getValue()){
                 game.changeStrategy(beetleType , x , y , z , move);
             }
         }
-        strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] = move;
+        strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] = move.getValue();
     }
 
     public static World getGame(){
@@ -248,6 +248,7 @@ public class AI {
         return ret;
     }
 
+
     public void doTurn(World game) {
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
@@ -256,8 +257,19 @@ public class AI {
 
         cells = game.getMap().getCells();
 
-        if (game.getCurrentTurn() == 0)
+        if (game.getCurrentTurn() == 0) {
             setDistances();
+            strategies = new int[2][3][2][3];
+            for(int i = 0;i < 2;i++){
+                for(int j = 0;j < 2;j++){
+                    for(int k = 0;k < 2;k++){
+                        for(int l = 0;l < 2;l++){
+                            strategies[i][j][k][l] = -1;
+                        }
+                    }
+                }
+            }
+        }
 
         State[] states = new State[36];
         for(int i=0;i<36;i++)
