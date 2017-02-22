@@ -78,29 +78,29 @@ public class AI {
                     newDir = Direction.Down;
                     break;
             }
-            System.out.print("{");
-            System.out.print(beetle.getPosition().getX());
-            System.out.print(",");
-            System.out.print(beetle.getPosition().getY());
-            System.out.print(",");
-            System.out.print(beetle.getDirection().getValue());
-            System.out.print(",");
-            System.out.print(move.getValue());
-            System.out.print("}");
+//            System.out.print("{");
+//            System.out.print(beetle.getPosition().getX());
+//            System.out.print(",");
+//            System.out.print(beetle.getPosition().getY());
+//            System.out.print(",");
+//            System.out.print(beetle.getDirection().getValue());
+//            System.out.print(",");
+//            System.out.print(move.getValue());
+//            System.out.print("}");
 
-            System.out.print("\t-->\t");
+//            System.out.print("\t-->\t");
 
-            System.out.print("{");
-            System.out.print(beetle.getPosition().getX());
-            System.out.print(",");
-            System.out.print(beetle.getPosition().getY());
-            System.out.print(",");
-            System.out.print(newDir.getValue());
-            System.out.print("}");
+//            System.out.print("{");
+//            System.out.print(beetle.getPosition().getX());
+//            System.out.print(",");
+//            System.out.print(beetle.getPosition().getY());
+//            System.out.print(",");
+//            System.out.print(newDir.getValue());
+//            System.out.print("}");
             dis = distance(beetle.getPosition().getX(), beetle.getPosition().getY(), newDir, beetle2.getPosition().getX(), beetle2.getPosition().getY());
-            System.out.print("\t-->\t");
-            System.out.print(dis);
-            System.out.println();
+//            System.out.print("\t-->\t");
+//            System.out.print(dis);
+//            System.out.println();
         }
         else if (move.getValue() == 1){
             switch (beetle.getDirection()){
@@ -258,7 +258,7 @@ public class AI {
                 }
             }
         }
-        for (int rowSrc = 0;rowSrc < height; rowSrc++){
+        /*for (int rowSrc = 0;rowSrc < height; rowSrc++){
             for (int colSrc = 0; colSrc < width; colSrc++){
                 for (int dir = 0;dir < 4;dir++){
                     for (int i = 0;i < height;i++){
@@ -285,7 +285,7 @@ public class AI {
                     }
                 }
             }
-        }
+        }*/
 //        System.out.println(1/0);
     }
 
@@ -369,18 +369,18 @@ public class AI {
 
     public static double stateScore(State state, Move move)
     {
-        System.out.println("(");
+//        System.out.println("(");
         double ret = 0;
         Cell[] myCell = game.getMap().getMyCells();
         for(int i=0;i<myCell.length;i++){
             if (myCell[i] == null) continue;
             if(cellState(myCell[i]).compareTo(state) == 0)
             {
-                System.out.println(calBeetleScore((Beetle) ((myCell[i]).getBeetle()), move));
+//                System.out.println(calBeetleScore((Beetle) ((myCell[i]).getBeetle()), move));
                 ret += calBeetleScore((Beetle) ((myCell[i]).getBeetle()), move);
             }
         }
-        System.out.println(")");
+//        System.out.println(")");
         return ret;
     }
 
@@ -431,6 +431,7 @@ public class AI {
             states[i] = new State(i/18, (i/6)%3, (i/3)%2, i%3);
         Arrays.sort(states, new StatesComparator());
         for(int i=0;i<36;i++) {
+            if (states[i].num() == 0) continue;
             Move bestMove = Move.values()[1];
             double MAX = stateScore(states[i], Move.values()[1]);
             //Todo: effect previous moves
@@ -440,12 +441,12 @@ public class AI {
 //                    continue;
 //                }
                 double tmp = stateScore(states[i], Move.values()[j]);
-                if (states[i].X == CellState.Blank && states[i].Z==CellState.Blank && states[i].Y == CellState.Ally) {
-                    System.out.println("#");
-                    System.out.println(i);
-                    System.out.println(j);
-                    System.out.println(tmp);
-                }
+//                if (states[i].X == CellState.Blank && states[i].Z==CellState.Blank && states[i].Y == CellState.Ally) {
+//                    System.out.println("#");
+//                    System.out.println(i);
+//                    System.out.println(j);
+//                    System.out.println(tmp);
+//                }
                 if (tmp > MAX) {
                     MAX = tmp;
                     bestMove = Move.values()[j];
@@ -454,6 +455,8 @@ public class AI {
             AI.myChangeStrategy(states[i].type , states[i].X , states[i].Y , states[i].Z, bestMove);
         }
 
+
+        System.out.println(game.getMyScore());
     }
 
 }
@@ -580,6 +583,18 @@ class State{
             if (this.compareTo(AI.cellState(c)) == 0){
                 int p = ((Beetle)(c.getBeetle())).getPower();
                 ret += p * p;
+            }
+        }
+        return ret;
+    }
+
+    public int num(){
+        World game = AI.getGame();
+        int ret = 0;
+        for (Cell c : game.getMap().getMyCells()){
+            if (c == null) continue;
+            if (this.compareTo(AI.cellState(c)) == 0){;
+                ret ++;
             }
         }
         return ret;
