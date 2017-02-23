@@ -22,6 +22,7 @@ public class AI {
     static Cell[][] cells;
     static int[][][][] strategies;
     private static HashMap<Integer , Integer> timeRemaining;
+    private static Beetle changingBeetle;
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
         System.out.print("__!__");
@@ -277,7 +278,6 @@ public class AI {
         return ((double) getEatingScore(beetle)) / dis;
     }
 
-
     public static void updateTimeRemaining(){
         if (timeRemaining == null){
             timeRemaining = new HashMap<>();
@@ -486,7 +486,10 @@ public class AI {
                 }while(Y == null);
                 break;
         }
-        return new State(beetle.getBeetleType(), beetleState(X), beetleState(Y), beetleState(Z));
+        if (beetle != changingBeetle) {
+            return new State(beetle.getBeetleType(), beetleState(X), beetleState(Y), beetleState(Z));
+        }
+        return new State(BeetleType.values()[(beetle.getBeetleType().getValue() + 1)%2], beetleState(X), beetleState(Y), beetleState(Z));
     }
 
     public static double stateScore(State state, Move move)
@@ -553,31 +556,64 @@ public class AI {
         for(int i=0;i<36;i++)
             states[i] = new State(i/18, (i/6)%3, (i/3)%2, i%3);
         Arrays.sort(states, new StatesComparator());
-        for(int i=0;i<36;i++) {
+        Move[] s = new Move[36];
+        Move[] bestMoves = new Move[36];
+        double beetleMAX = -10000000;
+        Beetle bestChange = null;
+        double bsum = 0;
+        changingBeetle = null;
+        for (int i = 0; i < 36; i++) {
             if (states[i].num() == 0) continue;
             Move bestMove = Move.values()[1];
             double MAX = stateScore(states[i], Move.values()[1]);
             //Todo: effect previous moves
             for (int j = 0; j < 3; j++) {
-
-//                if (j == 1){
-//                    continue;
-//                }
                 double tmp = stateScore(states[i], Move.values()[j]);
-//                if (states[i].X == CellState.Blank && states[i].Z==CellState.Blank && states[i].Y == CellState.Ally) {
-//                    System.out.println("#");
-//                    System.out.println(i);
-//                    System.out.println(j);
-//                    System.out.println(tmp);
-//                }
                 if (tmp > MAX) {
                     MAX = tmp;
                     bestMove = Move.values()[j];
                 }
             }
-            AI.myChangeStrategy(states[i].type , states[i].X , states[i].Y , states[i].Z, bestMove);
+            bsum += MAX;
+            bestMoves[i] = bestMove;
         }
+        beetleMAX = bsum;
 
+        for (Cell c : game.getMap().getMyCells()) {
+            if (c == null) continue;
+            changingBeetle = (Beetle) c.getBeetle();
+            for (int i = 0; i < 36; i++) {
+                if (states[i].num() == 0) continue;
+                Move bestMove = Move.values()[1];
+                double MAX = stateScore(states[i], Move.values()[1]);
+                //Todo: effect previous moves
+                for (int j = 0; j < 3; j++) {
+                    double tmp = stateScore(states[i], Move.values()[j]);
+                    if (tmp > MAX) {
+                        MAX = tmp;
+                        bestMove = Move.values()[j];
+                    }
+                }
+                bsum += MAX;
+                s[i] = bestMove;
+//                AI.myChangeStrategy(states[i].type, states[i].X, states[i].Y, states[i].Z, bestMove);
+            }
+            if (bsum > beetleMAX){
+                beetleMAX = bsum;
+                bestChange = changingBeetle;
+                for (int j = 0;j < 36;j++){
+                    bestMoves[j] = s[j];
+                }
+            }
+        }
+        if (bestChange != null) {
+            game.changeType(bestChange, BeetleType.values()[(bestChange.getBeetleType().getValue() + 1) % 2]);
+        }
+        for (int i = 0;i < 36;i++){
+            if (bestMoves[i] != null) {
+                AI.myChangeStrategy(states[i].type, states[i].X, states[i].Y, states[i].Z, bestMoves[i]);
+            }
+        }
 
         System.out.println(game.getMyScore());
     }
