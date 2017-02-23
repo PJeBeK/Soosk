@@ -104,8 +104,8 @@ public class AI {
 //            System.out.println();
         }
         else if (move.getValue() == 1){
-            System.out.println(beetle2);
-            System.out.println(beetle2.getPosition());
+//            System.out.println(beetle2);
+//            System.out.println(beetle2.getPosition());
             switch (beetle.getDirection()){
                 case Right:
                     dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w, beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
@@ -563,7 +563,6 @@ public class AI {
         double bsum = 0;
         changingBeetle = null;
         for (int i = 0; i < 36; i++) {
-            if (states[i].num() == 0) continue;
             Move bestMove = Move.values()[1];
             double MAX = stateScore(states[i], Move.values()[1]);
             //Todo: effect previous moves
@@ -578,12 +577,14 @@ public class AI {
             bestMoves[i] = bestMove;
         }
         beetleMAX = bsum;
+        System.out.println("#");
+        System.out.println(beetleMAX);
 
         for (Cell c : game.getMap().getMyCells()) {
+            bsum = 0;
             if (c == null) continue;
             changingBeetle = (Beetle) c.getBeetle();
             for (int i = 0; i < 36; i++) {
-                if (states[i].num() == 0) continue;
                 Move bestMove = Move.values()[1];
                 double MAX = stateScore(states[i], Move.values()[1]);
                 //Todo: effect previous moves
@@ -606,6 +607,8 @@ public class AI {
                 }
             }
         }
+        System.out.println("#");
+        System.out.println(beetleMAX);
         if (bestChange != null) {
             game.changeType(bestChange, BeetleType.values()[(bestChange.getBeetleType().getValue() + 1) % 2]);
         }
