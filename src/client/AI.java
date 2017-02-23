@@ -2,10 +2,7 @@ package client;
 
 import client.model.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.*;
 
 
 /**
@@ -24,6 +21,7 @@ public class AI {
     static int[][][][][][] distances;
     static Cell[][] cells;
     static int[][][][] strategies;
+    private static HashMap<Integer , Integer> timeRemaining;
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
         System.out.print("__!__");
@@ -105,6 +103,8 @@ public class AI {
 //            System.out.println();
         }
         else if (move.getValue() == 1){
+            System.out.println(beetle2);
+            System.out.println(beetle2.getPosition());
             switch (beetle.getDirection()){
                 case Right:
                     dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w, beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
@@ -160,6 +160,14 @@ public class AI {
         }
     }
 
+    public static double getEatingScore(Beetle beetle){
+        if (beetle.has_winge()){
+            return (double) game.getConstants().getQueenFoodScore();
+        }else{
+            return (double) game.getConstants().getFishFoodScore();
+        }
+    }
+
     public static double calBeetleScore(Beetle beetle, Move move){
 //        System.out.println("hooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooly shit");
         Cell[] oppCells = game.getMap().getOppCells();
@@ -168,16 +176,121 @@ public class AI {
             if (c == null)
                 continue;
             Beetle b = (Beetle) c.getBeetle();
+            //TODO :server is wrong
 //            System.out.println("^");
+//            System.out.println(c);
+//            System.out.println(c.getX());
+//            System.out.println(c.getY());
+//            System.out.println(c.getBeetle().toString());
+//            System.out.println(b.getPosition());
+//            System.out.println(c.getBeetle().getPosition());
 //            System.out.println(calScore(beetle, move, b));
             ans += calScore(beetle, move, b);
+        }
+
+        //TODO: is it good?
+        for (Cell c:game.getMap().getFoodCells()){
+            if (c == null) continue;
+            ans += calFoodScore(beetle , move , c.getItem());
         }
         ans /= oppCells.length;
         return ans;
     }
 
-//    public static double calFoodScore(Beetle beetle)
+    public static double calFoodScore(Beetle beetle, Move move , Entity food){
+        int w = game.getMap().getWidth();
+        int h = game.getMap().getHeight();
+        double INF = 1000.0;
+        int dis = 0;
+        if (move.getValue() != 1){
+            int directionValue = 0;
+            switch (move.getValue()){
+                case 0:
+                    directionValue = (beetle.getDirection().getValue() + 3) %4;
+                    break;
+                case 2:
+                    directionValue = (beetle.getDirection().getValue() + 1) %4;
+                    break;
+            }
+            Direction newDir = null;
+            switch (directionValue){
+                case 0:
+                    newDir = Direction.Right;
+                    break;
+                case 1:
+                    newDir = Direction.Up;
+                    break;
+                case 2:
+                    newDir = Direction.Left;
+                    break;
+                case 3:
+                    newDir = Direction.Down;
+                    break;
+            }
+//            System.out.print("{");
+//            System.out.print(beetle.getPosition().getX());
+//            System.out.print(",");
+//            System.out.print(beetle.getPosition().getY());
+//            System.out.print(",");
+//            System.out.print(beetle.getDirection().getValue());
+//            System.out.print(",");
+//            System.out.print(move.getValue());
+//            System.out.print("}");
 
+//            System.out.print("\t-->\t");
+
+//            System.out.print("{");
+//            System.out.print(beetle.getPosition().getX());
+//            System.out.print(",");
+//            System.out.print(beetle.getPosition().getY());
+//            System.out.print(",");
+//            System.out.print(newDir.getValue());
+//            System.out.print("}");
+            dis = distance(beetle.getPosition().getX(), beetle.getPosition().getY(), newDir, food.getPosition().getX(), food.getPosition().getY());
+//            System.out.print("\t-->\t");
+//            System.out.print(dis);
+//            System.out.println();
+        }
+        else if (move.getValue() == 1){
+            switch (beetle.getDirection()){
+                case Right:
+                    dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w, beetle.getDirection(), food.getPosition().getX(), food.getPosition().getY());
+                    break;
+                case Left:
+                    dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+w-1)%w, beetle.getDirection(), food.getPosition().getX(), food.getPosition().getY());
+                    break;
+                case Up:
+                    dis = distance((beetle.getPosition().getX()+h-1)%h, beetle.getPosition().getY(), beetle.getDirection(), food.getPosition().getX(), food.getPosition().getY());
+                    break;
+                case Down:
+                    dis = distance((beetle.getPosition().getX()+1)%h, beetle.getPosition().getY(), beetle.getDirection(), food.getPosition().getX(), food.getPosition().getY());
+                    break;
+            }
+        }
+        if (timeRemaining.get(new Integer(food.getId())) <= dis){
+            return 0;
+        }
+        dis = dis * dis;
+        if (dis == 0){
+            return INF * getEatingScore(beetle);
+        }
+        return ((double) getEatingScore(beetle)) / dis;
+    }
+
+
+    public static void updateTimeRemaining(){
+        if (timeRemaining == null){
+            timeRemaining = new HashMap<>();
+        }
+        for (Cell c : game.getMap().getFoodCells()){
+            Integer id = new Integer(c.getItem().getId());
+            if (!timeRemaining.containsKey(id)){
+                timeRemaining.put(id , game.getConstants().getFoodValidTime());
+            }else{
+                timeRemaining.put(id , timeRemaining.get(id) - 1);
+            }
+        }
+    }
 
     public static void setDistances(){
         int height = game.getMap().getHeight();
@@ -398,6 +511,7 @@ public class AI {
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
         System.out.println(game.getCurrentTurn());
+        AI.updateTimeRemaining();
 
 
         cells = game.getMap().getCells();
