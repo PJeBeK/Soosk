@@ -26,11 +26,11 @@ public class AI {
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
 //        System.out.print("__!__");
-//        System.out.print(beetleType.getValue());
-//        System.out.print(x.getValue());
-//        System.out.print(y.getValue());
-//        System.out.print(z.getValue());
-//        System.out.println(move.getValue());
+//        System.out.print(beetleType);
+//        System.out.print(x);
+//        System.out.print(y);
+//        System.out.print(z);
+//        System.out.println(move);
 
         if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
@@ -124,6 +124,9 @@ public class AI {
                     dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , (beetle.getPosition().getX()+1)%h, beetle.getPosition().getY());
                     break;
             }
+        }
+        if (dis > 5){
+            dis = 0;
         }
         dis = dis * dis;
         dis1 = dis;
@@ -338,6 +341,9 @@ public class AI {
         if (slipper.getRemainingTurns() <= dis){
             return -INF * getKillingScore(beetle);
         }
+        if (slipper.getRemainingTurns() == dis + 1){
+            return -INF * getKillingScore(beetle) * 0.5;
+        }
         return 0;
     }
 
@@ -493,11 +499,18 @@ public class AI {
         int width = game.getMap().getWidth();
         int dist = 4;
         for (int j = -1;j < 2;j++){
-            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowSrc + j + height) % height , (colDest + 2) % width));
-            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowSrc + j + height) % height , (colDest + width - 2) % width));
-            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowSrc + 2) % height , (colDest + j + width) % width));
-            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowSrc + height - 2) % height , (colDest + j + width) % width));
+            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + j + height) % height , (colDest + 2) % width));
+            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + j + height) % height , (colDest + width - 2) % width));
+            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + 2) % height , (colDest + j + width) % width));
+            dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + height - 2) % height , (colDest + j + width) % width));
         }
+//        System.out.println("_!!_");
+//        System.out.println(rowSrc);
+//        System.out.println(colSrc);
+//        System.out.println(dirSrc);
+//        System.out.println(rowDest);
+//        System.out.println(colDest);
+//        System.out.println(dist);
         return dist;
     }
 
@@ -590,6 +603,7 @@ public class AI {
         double epsilon = 0.0001;
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
+        System.out.println();
         System.out.println(game.getCurrentTurn());
         AI.updateTimeRemaining();
 
@@ -610,7 +624,7 @@ public class AI {
                     }
                 }
             }
-            return;
+            System.out.println("done");
         }
         /*for(int i = 0;i < 2;i++) {
             for (int j = 0; j < 3; j++) {
@@ -645,18 +659,38 @@ public class AI {
             //Todo: effect previous moves
             for (int j = 0; j < 3; j++) {
                 double tmp = stateScore(states[i], Move.values()[j]);
+                System.out.print("\t : {");
+                System.out.print(Move.values()[j]);
+                System.out.print(" : ");
+                System.out.print(tmp);
+                System.out.print("}");
                 int a = 0;
                 if (tmp > MAX + epsilon) {
                     MAX = tmp;
                     bestMove = Move.values()[j];
                 }
             }
+            System.out.print("\t  ");
+            System.out.print(i);
+            System.out.print(" : ");
+            System.out.print(states[i].type);
+            System.out.print(" (");
+            System.out.print(states[i].X);
+            System.out.print(" , ");
+            System.out.print(states[i].Y);
+            System.out.print(" , ");
+            System.out.print(states[i].Z);
+            System.out.print(") : ");
+            System.out.print(bestMove);
+            System.out.print(" -->");
+            System.out.print(MAX);
             bsum += MAX;
             bestMoves[i] = bestMove;
         }
         beetleMAX = bsum;
-//        System.out.println("#");
-//        System.out.println(beetleMAX);
+        System.out.println();
+        System.out.print("# ");
+        System.out.println(beetleMAX);
 
         for (Cell c : game.getMap().getMyCells()) {
             bsum = 0;
@@ -668,15 +702,41 @@ public class AI {
                 //Todo: effect previous moves
                 for (int j = 0; j < 3; j++) {
                     double tmp = stateScore(states[i], Move.values()[j]);
+                    System.out.print("\t : {");
+                    System.out.print(Move.values()[j]);
+                    System.out.print(" : ");
+                    System.out.print(tmp);
+                    System.out.print("}");
                     if (tmp > MAX + epsilon) {
                         MAX = tmp;
                         bestMove = Move.values()[j];
                     }
                 }
+                System.out.print("\t  ");
+                System.out.print(i);
+                System.out.print(" : ");
+                System.out.print(states[i].type);
+                System.out.print(" (");
+                System.out.print(states[i].X);
+                System.out.print(" , ");
+                System.out.print(states[i].Y);
+                System.out.print(" , ");
+                System.out.print(states[i].Z);
+                System.out.print(") : ");
+                System.out.print(bestMove);
+                System.out.print(" -->");
+                System.out.print(MAX);
                 bsum += MAX;
                 s[i] = bestMove;
 //                AI.myChangeStrategy(states[i].type, states[i].X, states[i].Y, states[i].Z, bestMove);
             }
+            System.out.println();
+            System.out.print("#: (");
+            System.out.print(changingBeetle.getPosition().getX());
+            System.out.print(" , ");
+            System.out.print(changingBeetle.getPosition().getY());
+            System.out.print(") : ");
+            System.out.println(bsum);
             if (bsum > beetleMAX + epsilon){
                 beetleMAX = bsum;
                 bestChange = changingBeetle;
@@ -687,6 +747,7 @@ public class AI {
         }
 //        System.out.println("#");
 //        System.out.println(beetleMAX);
+        changingBeetle = bestChange;
         if (bestChange != null) {
             game.changeType(bestChange, BeetleType.values()[(bestChange.getBeetleType().getValue() + 1) % 2]);
         }
