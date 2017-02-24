@@ -126,7 +126,7 @@ public class AI {
             }
         }
         if (dis > 5){
-            dis = 0;
+            return 0;
         }
         dis = dis * dis;
         dis1 = dis;
@@ -762,7 +762,9 @@ public class AI {
             System.out.print(" , ");
             System.out.print(changingBeetle.getPosition().getY());
             System.out.print(") : ");
-            System.out.println(bsum);
+            System.out.print(bsum);
+            System.out.print(" ? ");
+            System.out.println(beetleMAX);
             if (bsum > beetleMAX + epsilon){
                 beetleMAX = bsum;
                 bestChange = changingBeetle;
