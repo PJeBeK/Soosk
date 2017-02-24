@@ -291,6 +291,12 @@ public class AI {
     }
 
     public static double calSlipperScore(Beetle beetle, Move move , Slipper slipper){
+        System.out.println("____");
+        System.out.println(beetle.getPosition().getX());
+        System.out.println(beetle.getPosition().getY());
+        System.out.println(beetle.getDirection());
+        System.out.println(move);
+        System.out.println("____");
         int w = game.getMap().getWidth();
         int h = game.getMap().getHeight();
         double INF = 1000.0;
@@ -338,10 +344,12 @@ public class AI {
                     break;
             }
         }
-        if (slipper.getRemainingTurns() <= dis){
+        System.out.println("*");
+        System.out.println(dis);
+        if (slipper.getRemainingTurns() < dis){
             return -INF * getKillingScore(beetle);
         }
-        if (slipper.getRemainingTurns() == dis + 1){
+        if (slipper.getRemainingTurns() == dis){
             return -INF * getKillingScore(beetle) * 0.5;
         }
         return 0;
@@ -497,6 +505,15 @@ public class AI {
     public static int distSlipper(int rowSrc , int colSrc , Direction dirSrc , int rowDest , int colDest){
         int height = game.getMap().getHeight();
         int width = game.getMap().getWidth();
+        Boolean flag = false;
+        for (int i = -1;i < 2;i++){
+            for (int j = -1;j <2;j++){
+                if (rowSrc == (rowDest + i + height) % height && colSrc == (colDest + j + width) % width){
+                    flag = true;
+                }
+            }
+        }
+        if (!flag) return 0;
         int dist = 4;
         for (int j = -1;j < 2;j++){
             dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + j + height) % height , (colDest + 2) % width));
@@ -504,13 +521,13 @@ public class AI {
             dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + 2) % height , (colDest + j + width) % width));
             dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + height - 2) % height , (colDest + j + width) % width));
         }
-//        System.out.println("_!!_");
-//        System.out.println(rowSrc);
-//        System.out.println(colSrc);
-//        System.out.println(dirSrc);
-//        System.out.println(rowDest);
-//        System.out.println(colDest);
-//        System.out.println(dist);
+        System.out.println("_!!_");
+        System.out.println(rowSrc);
+        System.out.println(colSrc);
+        System.out.println(dirSrc);
+        System.out.println(rowDest);
+        System.out.println(colDest);
+        System.out.println(dist);
         return dist;
     }
 
@@ -642,6 +659,15 @@ public class AI {
 //            System.out.println(((Beetle)c.getBeetle()).getPosition().getX());
 //            System.out.println(((Beetle)c.getBeetle()).getPosition().getY());
 //        }
+
+        for (Cell c : game.getMap().getSlipperCells()){
+            if (c == null) continue;
+            System.out.print("Slipper : ");
+            System.out.print(c.getSlipper().getPosition().getX());
+            System.out.print(" ");
+            System.out.print(c.getSlipper().getPosition().getY());
+            System.out.println();
+        }
 
         State[] states = new State[36];
         for(int i=0;i<36;i++)
