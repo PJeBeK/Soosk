@@ -25,18 +25,20 @@ public class AI {
     private static Beetle changingBeetle;
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
-//        System.out.print("__!__");
-//        System.out.print(beetleType);
-//        System.out.print(x);
-//        System.out.print(y);
-//        System.out.print(z);
-//        System.out.println(move);
+        System.out.print("__!__");
+        System.out.print(beetleType);
+        System.out.print(x);
+        System.out.print(y);
+        System.out.print(z);
+        System.out.println(move);
 
         if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
+            System.out.println("done");
         }else{
             if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] != move.getValue()){
                 game.changeStrategy(beetleType , x , y , z , move);
+                System.out.println("done");
             }
         }
         strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] = move.getValue();
@@ -125,11 +127,13 @@ public class AI {
                     break;
             }
         }
-        if (dis > 5){
-            return 0;
+        if (dis1 > 5){
+            if (beetle.getPower() < beetle2.getPower()) {
+                return 0;
+            }
         }
         dis = dis * dis;
-        dis1 = dis;
+//        dis1 = dis;
         dis1 = dis1 * dis1;
         if(beetle.getPower() > 2 * beetle2.getPower()){
             if (dis == 0)
@@ -617,7 +621,7 @@ public class AI {
 
 
     public void doTurn(World game) {
-        double epsilon = 0.0001;
+        double epsilon = 1.0;
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
         System.out.println();
