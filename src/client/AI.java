@@ -32,6 +32,10 @@ public class AI {
         System.out.print(z);
         System.out.println(move);
 
+        CellState c = x;
+        x = z;
+        z = c;
+
         if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
             System.out.println("done");
@@ -602,6 +606,7 @@ public class AI {
         return new State(BeetleType.values()[(beetle.getBeetleType().getValue() + 1)%2], beetleState(X), beetleState(Y), beetleState(Z));
     }
 
+
     public static double stateScore(State state, Move move)
     {
 //        System.out.println("(");
@@ -627,9 +632,26 @@ public class AI {
         System.out.println();
         System.out.println(game.getCurrentTurn());
         AI.updateTimeRemaining();
-
-
         cells = game.getMap().getCells();
+
+ /*       strategies = new int[2][3][2][3];
+
+        for(int i = 0;i < 2;i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 2; k++) {
+                    for (int l = 0; l < 3; l++) {
+                        strategies[i][j][k][l] = -1;
+                        if (i == 0 && l == 2 && k == 1 && j == 0 ){
+                            AI.myChangeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.turnRight);
+                        }
+                        else {
+                            AI.myChangeStrategy(BeetleType.values()[i], CellState.values()[j], CellState.values()[k], CellState.values()[l], Move.stepForward);
+                        }
+                    }
+                }
+            }
+        }*/
+
 
         if (strategies == null) {
             setDistances();
@@ -647,15 +669,6 @@ public class AI {
             }
             System.out.println("done");
         }
-        /*for(int i = 0;i < 2;i++) {
-            for (int j = 0; j < 3; j++) {
-                for (int k = 0; k < 2; k++) {
-                    for (int l = 0; l < 3; l++) {
-                        AI.myChangeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.stepForward);
-                    }
-                }
-            }
-        }*/
 
 //        for (Cell c : game.getMap().getMyCells()){
 //            if (c == null) continue;
