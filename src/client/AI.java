@@ -131,7 +131,7 @@ public class AI {
                     break;
             }
         }
-        if (dis1 > 5){
+        if (dis1 > 3){
             if (beetle.getPower() < beetle2.getPower()) {
                 return 0;
             }
@@ -299,12 +299,12 @@ public class AI {
     }
 
     public static double calSlipperScore(Beetle beetle, Move move , Slipper slipper){
-        System.out.println("____");
-        System.out.println(beetle.getPosition().getX());
-        System.out.println(beetle.getPosition().getY());
-        System.out.println(beetle.getDirection());
-        System.out.println(move);
-        System.out.println("____");
+//        System.out.println("____");
+//        System.out.println(beetle.getPosition().getX());
+//        System.out.println(beetle.getPosition().getY());
+//        System.out.println(beetle.getDirection());
+//        System.out.println(move);
+//        System.out.println("____");
         int w = game.getMap().getWidth();
         int h = game.getMap().getHeight();
         double INF = 1000.0;
@@ -352,8 +352,8 @@ public class AI {
                     break;
             }
         }
-        System.out.println("*");
-        System.out.println(dis);
+//        System.out.println("*");
+//        System.out.println(dis);
         if (slipper.getRemainingTurns() < dis){
             return -INF * getKillingScore(beetle);
         }
@@ -529,13 +529,13 @@ public class AI {
             dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + 2) % height , (colDest + j + width) % width));
             dist = Math.min(dist , distance(rowSrc , colSrc , dirSrc , (rowDest + height - 2) % height , (colDest + j + width) % width));
         }
-        System.out.println("_!!_");
-        System.out.println(rowSrc);
-        System.out.println(colSrc);
-        System.out.println(dirSrc);
-        System.out.println(rowDest);
-        System.out.println(colDest);
-        System.out.println(dist);
+//        System.out.println("_!!_");
+//        System.out.println(rowSrc);
+//        System.out.println(colSrc);
+//        System.out.println(dirSrc);
+//        System.out.println(rowDest);
+//        System.out.println(colDest);
+//        System.out.println(dist);
         return dist;
     }
 
@@ -634,15 +634,15 @@ public class AI {
         AI.updateTimeRemaining();
         cells = game.getMap().getCells();
 
- /*       strategies = new int[2][3][2][3];
+        /*strategies = new int[2][3][2][3];
 
         for(int i = 0;i < 2;i++) {
             for (int j = 0; j < 3; j++) {
                 for (int k = 0; k < 2; k++) {
                     for (int l = 0; l < 3; l++) {
                         strategies[i][j][k][l] = -1;
-                        if (i == 0 && l == 2 && k == 1 && j == 0 ){
-                            AI.myChangeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.turnRight);
+                        if (i == 0 && l == 2 && k == 1 && j == 2 ){
+                            AI.myChangeStrategy(BeetleType.LOW , CellState.Blank , CellState.Enemy , CellState.Blank , Move.turnRight);
                         }
                         else {
                             AI.myChangeStrategy(BeetleType.values()[i], CellState.values()[j], CellState.values()[k], CellState.values()[l], Move.stepForward);
