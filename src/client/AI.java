@@ -1,6 +1,7 @@
 package client;
 
 import client.model.*;
+import javafx.util.Pair;
 
 import java.util.*;
 
@@ -207,6 +208,12 @@ public class AI {
             ans += calFoodScore(beetle , move , c.getItem());
         }
 
+        //TODO: is it good?
+        for (Cell c : game.getMap().getTrashCells()){
+            if (c == null) continue;
+            ans += calTrashScore(beetle , move , c.getItem());
+        }
+
 
         //slipper //TODO not debuged
         for (Cell c : game.getMap().getSlipperCells()){
@@ -297,6 +304,62 @@ public class AI {
         }
         return ((double) getEatingScore(beetle)) / dis;
     }
+
+    public static double calTrashScore(Beetle beetle, Move move , Entity trash){
+        int w = game.getMap().getWidth();
+        int h = game.getMap().getHeight();
+        double INF = 1000.0;
+        int dis = 0;
+        if (move.getValue() != 1){
+            int directionValue = 0;
+            switch (move.getValue()){
+                case 0:
+                    directionValue = (beetle.getDirection().getValue() + 3) %4;
+                    break;
+                case 2:
+                    directionValue = (beetle.getDirection().getValue() + 1) %4;
+                    break;
+            }
+            Direction newDir = null;
+            switch (directionValue){
+                case 0:
+                    newDir = Direction.Right;
+                    break;
+                case 1:
+                    newDir = Direction.Up;
+                    break;
+                case 2:
+                    newDir = Direction.Left;
+                    break;
+                case 3:
+                    newDir = Direction.Down;
+                    break;
+            }
+            dis = distance(beetle.getPosition().getX(), beetle.getPosition().getY(), newDir, trash.getPosition().getX(), trash.getPosition().getY());
+        }
+        else if (move.getValue() == 1){
+            switch (beetle.getDirection()){
+                case Right:
+                    dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w, beetle.getDirection(), trash.getPosition().getX(), trash.getPosition().getY());
+                    break;
+                case Left:
+                    dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+w-1)%w, beetle.getDirection(), trash.getPosition().getX(), trash.getPosition().getY());
+                    break;
+                case Up:
+                    dis = distance((beetle.getPosition().getX()+h-1)%h, beetle.getPosition().getY(), beetle.getDirection(), trash.getPosition().getX(), trash.getPosition().getY());
+                    break;
+                case Down:
+                    dis = distance((beetle.getPosition().getX()+1)%h, beetle.getPosition().getY(), beetle.getDirection(), trash.getPosition().getX(), trash.getPosition().getY());
+                    break;
+            }
+        }
+        dis = dis * dis;
+        if (dis == 0){
+            return -INF * getEatingScore(beetle);
+        }
+        return 0;
+    }
+
 
     public static double calSlipperScore(Beetle beetle, Move move , Slipper slipper){
 //        System.out.println("____");
@@ -690,6 +753,9 @@ public class AI {
         for(int i=0;i<36;i++)
             states[i] = new State(i/18, (i/6)%3, (i/3)%2, i%3);
         Arrays.sort(states, new StatesComparator());
+
+
+
         Move[] s = new Move[36];
         Move[] bestMoves = new Move[36];
         double beetleMAX = -10000000;
@@ -802,6 +868,30 @@ public class AI {
                 AI.myChangeStrategy(states[i].type, states[i].X, states[i].Y, states[i].Z, bestMoves[i]);
             }
         }
+
+
+/*
+        HashMap<Integer , Double>[] moveScore = new HashMap[3];
+        moveScore[0] = new HashMap<>();
+        moveScore[1] = new HashMap<>();
+        moveScore[2] = new HashMap<>();
+
+        for (Cell c  : game.getMap().getMyCells()){
+            if (c == null) continue;
+            Beetle b = (Beetle) c.getBeetle();
+            for (int j = 0;j < 3;j++){
+                moveScore[j].put(new Integer(b.getId()) , new Double(calBeetleScore(b , Move.values()[j])));
+            }
+        }
+        for (int i = 0;i < 18;i++){
+            for (int j = 0;j < 3;j++){
+                for (int k = 0;k < 3;k++){
+
+                }
+            }
+        }*/
+
+
 
 //        System.out.println(game.getMyScore());
     }
