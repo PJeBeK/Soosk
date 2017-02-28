@@ -24,6 +24,8 @@ public class AI {
     static int[][][][] strategies;
     private static HashMap<Integer , Integer> timeRemaining;
     private static Beetle changingBeetle;
+    private static Node[][][] nodes;
+    private static Boolean isDone = false;
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
         System.out.print("__!__");
@@ -444,7 +446,7 @@ public class AI {
         int height = game.getMap().getHeight();
         int width = game.getMap().getWidth();
         distances = new int[height][width][4][height][width][4];
-        Node[][][] nodes = new Node[height][width][4];
+        nodes = new Node[height][width][4];
         Node.setWidth(width);
         Node.setHeight(height);
         for (int rowSrc = 0;rowSrc < height; rowSrc++){
@@ -481,6 +483,18 @@ public class AI {
                         }
                     }
                     Node.queuePush(nodes[rowSrc][colSrc][dir]);
+
+                    if (nodes[rowSrc][colSrc][dir] == null){
+                        System.out.println("EXCEPTION : { ");
+                        System.out.println(rowSrc);
+                        System.out.println(" , ");
+                        System.out.println(colSrc);
+                        System.out.println(" , ");
+                        System.out.println(dir);
+                        System.out.println("}");
+                    }
+
+
                     while(!Node.isQueueEmpty()){
                         Node a = Node.pull();
                         a.bfs();
@@ -528,35 +542,34 @@ public class AI {
                 }
             }
         }
-        /*for (int rowSrc = 0;rowSrc < height; rowSrc++){
-            for (int colSrc = 0; colSrc < width; colSrc++){
-                for (int dir = 0;dir < 4;dir++){
-                    for (int i = 0;i < height;i++){
-                        for (int j = 0; j < width; j++){
-                            for (int k = 0;k < 4;k++){
-                                if(!(i == 3 && j == 3 && colSrc == 4)) continue;
-                                System.out.print("{");
-                                System.out.print(rowSrc);
-                                System.out.print(",");
-                                System.out.print(colSrc);
-                                System.out.print(",");
-                                System.out.print(dir);
-                                System.out.print(",");
-                                System.out.print(i);
-                                System.out.print(",");
-                                System.out.print(j);
-                                System.out.print(",");
-                                System.out.print(k);
-                                System.out.print("\t-->");
-                                System.out.print(distances[rowSrc][colSrc][dir][i][j][k]);
-                                System.out.println("}");
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
-//        System.out.println(1/0);
+//        for (int rowSrc = 0;rowSrc < height; rowSrc++){
+//            for (int colSrc = 0; colSrc < width; colSrc++){
+//                for (int dir = 0;dir < 4;dir++){
+//                    for (int i = 0;i < height;i++){
+//                        for (int j = 0; j < width; j++){
+//                            for (int k = 0;k < 4;k++){
+//                                if(!(i == 3 && j == 3 && colSrc == 4)) continue;
+//                                System.out.print("{");
+//                                System.out.print(rowSrc);
+//                                System.out.print(",");
+//                                System.out.print(colSrc);
+//                                System.out.print(",");
+//                                System.out.print(dir);
+//                                System.out.print(",");
+//                                System.out.print(i);
+//                                System.out.print(",");
+//                                System.out.print(j);
+//                                System.out.print(",");
+//                                System.out.print(k);
+//                                System.out.print("\t-->");
+//                                System.out.print(distances[rowSrc][colSrc][dir][i][j][k]);
+//                                System.out.println("}");
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
 
     public static int distance(int rowSrc , int colSrc , Direction dirSrc , int rowDest , int colDest){
@@ -717,8 +730,6 @@ public class AI {
 
 
         if (strategies == null) {
-            setDistances();
-            System.out.println("!3");
             strategies = new int[2][3][2][3];
             for(int i = 0;i < 2;i++) {
                 for (int j = 0; j < 3; j++) {
@@ -730,8 +741,17 @@ public class AI {
                     }
                 }
             }
+            setDistances();
+            isDone = true;
+            System.out.println("!3");
             System.out.println("done");
         }
+
+        if (!isDone){
+            return;
+        }
+
+
 
 //        for (Cell c : game.getMap().getMyCells()){
 //            if (c == null) continue;
@@ -752,7 +772,7 @@ public class AI {
         State[] states = new State[36];
         for(int i=0;i<36;i++)
             states[i] = new State(i/18, (i/6)%3, (i/3)%2, i%3);
-        Arrays.sort(states, new StatesComparator());
+/*        Arrays.sort(states, new StatesComparator());
 
 
 
@@ -868,9 +888,9 @@ public class AI {
                 AI.myChangeStrategy(states[i].type, states[i].X, states[i].Y, states[i].Z, bestMoves[i]);
             }
         }
+*/
 
 
-/*
         HashMap<Integer , Double>[] moveScore = new HashMap[3];
         moveScore[0] = new HashMap<>();
         moveScore[1] = new HashMap<>();
@@ -879,17 +899,145 @@ public class AI {
         for (Cell c  : game.getMap().getMyCells()){
             if (c == null) continue;
             Beetle b = (Beetle) c.getBeetle();
+            System.out.print("( ");
+            System.out.print(b.getPosition().getX());
+            System.out.print(" , ");
+            System.out.print(b.getPosition().getY());
+            System.out.print(") : ");
             for (int j = 0;j < 3;j++){
                 moveScore[j].put(new Integer(b.getId()) , new Double(calBeetleScore(b , Move.values()[j])));
+                System.out.print("\t");
+                System.out.print(Move.values()[j]);
+                System.out.print(" -> ");
+                System.out.print(moveScore[j].get(b.getId()));
             }
+            System.out.println();
+
+
         }
+        double maxScore = -100000000;
+        int[] bestJ = new int[18];
+        int[] bestK = new int[18];
         for (int i = 0;i < 18;i++){
-            for (int j = 0;j < 3;j++){
-                for (int k = 0;k < 3;k++){
+
+            maxScore = 0;
+            int minChange = 0 ;
+            for (Cell c  : game.getMap().getMyCells()){
+                if (c == null) continue;
+                Beetle b = (Beetle) c.getBeetle();
+                if (states[i].compareTo(cellState(c)) == 0 || states[i+18].compareTo(cellState(c)) == 0){
+                    double s1 = moveScore[1].get(b.getId());
+                    double s2 = moveScore[1].get(b.getId());
+                    maxScore += Math.max(s1 , s2);
+                    if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon){
+                        minChange++;
+                    }else if (states[i+18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon){
+                        minChange++;
+                    }
 
                 }
             }
-        }*/
+            bestJ[i] = 1;
+            bestK[i] = 1;
+
+
+            for (int j = 0;j < 3;j++){
+                for (int k = 0;k < 3;k++){
+                    double score = 0;
+                    int change = 0;
+                    for (Cell c  : game.getMap().getMyCells()){
+                        if (c == null) continue;
+                        Beetle b = (Beetle) c.getBeetle();
+                        if (states[i].compareTo(cellState(c)) == 0 || states[i+18].compareTo(cellState(c)) == 0){
+                            double s1 = moveScore[j].get(b.getId());
+                            double s2 = moveScore[k].get(b.getId());
+                            score += Math.max(s1 , s2);
+                            if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon){
+                                change++;
+                            }else if (states[i+18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon){
+                                change++;
+                            }
+                        }
+                    }
+                    if (score > maxScore + epsilon){
+                        maxScore = score;
+                        bestJ[i] = j;
+                        bestK[i] = k;
+                        minChange = change;
+                    }
+                    else if (score < maxScore + epsilon && score > maxScore - epsilon){
+                        if (bestJ[i] == 1 && bestK[i] == 1) continue;
+                        if ((j == 1 || k == 1) && bestJ[i] != 1 && bestK[i]!= 1){
+                            maxScore = score;
+                            bestJ[i] = j;
+                            bestK[i] = k;
+                            minChange = change;
+                        }else if (j == 1 || k == 1){
+                            if (change < minChange){
+                                maxScore = score;
+                                bestJ[i] = j;
+                                bestK[i] = k;
+                                minChange = change;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        System.out.println("______");
+        for (int i = 0;i < 18;i++){
+            System.out.print(bestJ[i]);
+            System.out.print(" , ");
+        }
+        System.out.println();
+        for (int i = 0;i < 18;i++){
+            System.out.print(bestK[i]);
+            System.out.print(" , ");
+        }
+        System.out.println();
+
+
+        for (int i = 0;i < 18;i++){
+            for (Cell c : game.getMap().getMyCells()){
+                if (c == null) continue;
+                if (states[i].compareTo(cellState(c)) == 0 || states[i + 18].compareTo(cellState(c)) == 0) {
+                    Beetle b = (Beetle) c.getBeetle();
+                    double s1 = moveScore[bestJ[i]].get(b.getId());
+                    double s2 = moveScore[bestK[i]].get(b.getId());
+                    if (s1 > s2 + epsilon) {
+                        if (b.getBeetleType().getValue() == 1) {
+                            game.changeType(b, BeetleType.values()[0]);
+                        }
+                    } else if (s2 > s1 + epsilon) {
+                        if (b.getBeetleType().getValue() == 0) {
+                            game.changeType(b, BeetleType.values()[1]);
+                        }
+                    } else {
+                        if (bestJ[i] == 1 && bestK[i] != 1) {
+                            if (b.getBeetleType().getValue() == 1) {
+                                game.changeType(b, BeetleType.values()[0]);
+                            }
+                        } else if (bestJ[i] != 1 && bestK[i] == 1) {
+                            if (b.getBeetleType().getValue() == 0) {
+                                game.changeType(b, BeetleType.values()[1]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int i = 0;i < 18;i++){
+//            if (states[i].num() == 0)continue;
+            AI.myChangeStrategy(BeetleType.values()[0], states[i].X, states[i].Y, states[i].Z, Move.values()[bestJ[i]]);
+        }
+
+        for (int i = 0;i < 18;i++){
+//            if (states[i + 18].num() == 0)continue;
+            AI.myChangeStrategy(BeetleType.values()[1], states[i].X, states[i].Y, states[i].Z, Move.values()[bestK[i]]);
+        }
 
 
 
@@ -955,8 +1103,18 @@ class Node{
         isVisited = true;
         lbl = level;
         for (Node neg : negs) {
+            if (neg == null){
+                System.out.println("EXCEPTION : { ");
+                System.out.println(row);
+                System.out.println(" , ");
+                System.out.println(col);
+                System.out.println(" , ");
+                System.out.println(dir);
+                System.out.println("}");
+            }
             if (!neg.getIsVisited()){
                 newQueue.push(neg);
+
             }
         }
     }
