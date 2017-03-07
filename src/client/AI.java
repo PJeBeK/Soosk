@@ -1,7 +1,6 @@
 package client;
 
 import client.model.*;
-import javafx.util.Pair;
 
 import java.util.*;
 
@@ -41,11 +40,11 @@ public class AI {
 
         if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
-            System.out.println("done");
+//            System.out.println("done");
         }else{
             if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] != move.getValue()){
                 game.changeStrategy(beetleType , x , y , z , move);
-                System.out.println("done");
+//                System.out.println("done");
             }
         }
         strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] = move.getValue();
@@ -484,15 +483,15 @@ public class AI {
                     }
                     Node.queuePush(nodes[rowSrc][colSrc][dir]);
 
-                    if (nodes[rowSrc][colSrc][dir] == null){
-                        System.out.println("EXCEPTION : { ");
-                        System.out.println(rowSrc);
-                        System.out.println(" , ");
-                        System.out.println(colSrc);
-                        System.out.println(" , ");
-                        System.out.println(dir);
-                        System.out.println("}");
-                    }
+//                    if (nodes[rowSrc][colSrc][dir] == null){
+//                        System.out.println("EXCEPTION : { ");
+//                        System.out.println(rowSrc);
+//                        System.out.println(" , ");
+//                        System.out.println(colSrc);
+//                        System.out.println(" , ");
+//                        System.out.println(dir);
+//                        System.out.println("}");
+//                    }
 
 
                     while(!Node.isQueueEmpty()){
@@ -702,13 +701,14 @@ public class AI {
 
 
     public void doTurn(World game) {
-        double epsilon = 1.0;
-        AI.game = game;
-        // fill this method, we've presented a stupid AI for example!
-        System.out.println();
-        System.out.println(game.getCurrentTurn());
-        AI.updateTimeRemaining();
-        cells = game.getMap().getCells();
+//        try {
+            double epsilon = game.getConstants().getUpdateCost();
+            AI.game = game;
+            // fill this method, we've presented a stupid AI for example!
+            System.out.println();
+            System.out.println(game.getCurrentTurn());
+            AI.updateTimeRemaining();
+            cells = game.getMap().getCells();
 
         /*strategies = new int[2][3][2][3];
 
@@ -729,28 +729,27 @@ public class AI {
         }*/
 
 
-        if (strategies == null) {
-            strategies = new int[2][3][2][3];
-            for(int i = 0;i < 2;i++) {
-                for (int j = 0; j < 3; j++) {
-                    for (int k = 0; k < 2; k++) {
-                        for (int l = 0; l < 3; l++) {
-                            strategies[i][j][k][l] = -1;
-                            game.changeStrategy(BeetleType.values()[i] , CellState.values()[j] , CellState.values()[k] , CellState.values()[l] , Move.stepForward);
+            if (strategies == null) {
+                strategies = new int[2][3][2][3];
+                for (int i = 0; i < 2; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        for (int k = 0; k < 2; k++) {
+                            for (int l = 0; l < 3; l++) {
+                                strategies[i][j][k][l] = -1;
+                                game.changeStrategy(BeetleType.values()[i], CellState.values()[j], CellState.values()[k], CellState.values()[l], Move.stepForward);
+                            }
                         }
                     }
                 }
+                setDistances();
+                isDone = true;
+                System.out.println("!3");
+                System.out.println("done");
             }
-            setDistances();
-            isDone = true;
-            System.out.println("!3");
-            System.out.println("done");
-        }
 
-        if (!isDone){
-            return;
-        }
-
+            if (!isDone) {
+                return;
+            }
 
 
 //        for (Cell c : game.getMap().getMyCells()){
@@ -760,18 +759,18 @@ public class AI {
 //            System.out.println(((Beetle)c.getBeetle()).getPosition().getY());
 //        }
 
-        for (Cell c : game.getMap().getSlipperCells()){
-            if (c == null) continue;
-            System.out.print("Slipper : ");
-            System.out.print(c.getSlipper().getPosition().getX());
-            System.out.print(" ");
-            System.out.print(c.getSlipper().getPosition().getY());
-            System.out.println();
-        }
+//        for (Cell c : game.getMap().getSlipperCells()){
+//            if (c == null) continue;
+//            System.out.print("Slipper : ");
+//            System.out.print(c.getSlipper().getPosition().getX());
+//            System.out.print(" ");
+//            System.out.print(c.getSlipper().getPosition().getY());
+//            System.out.println();
+//        }
 
-        State[] states = new State[36];
-        for(int i=0;i<36;i++)
-            states[i] = new State(i/18, (i/6)%3, (i/3)%2, i%3);
+            State[] states = new State[36];
+            for (int i = 0; i < 36; i++)
+                states[i] = new State(i / 18, (i / 6) % 3, (i / 3) % 2, i % 3);
 /*        Arrays.sort(states, new StatesComparator());
 
 
@@ -891,99 +890,111 @@ public class AI {
 */
 
 
-        HashMap<Integer , Double>[] moveScore = new HashMap[3];
-        moveScore[0] = new HashMap<>();
-        moveScore[1] = new HashMap<>();
-        moveScore[2] = new HashMap<>();
+            HashMap<Integer, Double>[] moveScore = new HashMap[3];
+            moveScore[0] = new HashMap<>();
+            moveScore[1] = new HashMap<>();
+            moveScore[2] = new HashMap<>();
 
-        for (Cell c  : game.getMap().getMyCells()){
-            if (c == null) continue;
-            Beetle b = (Beetle) c.getBeetle();
+            for (Cell c : game.getMap().getMyCells()) {
+                if (c == null) continue;
+                Beetle b = (Beetle) c.getBeetle();
             System.out.print("( ");
             System.out.print(b.getPosition().getX());
             System.out.print(" , ");
             System.out.print(b.getPosition().getY());
             System.out.print(") : ");
-            for (int j = 0;j < 3;j++){
-                moveScore[j].put(new Integer(b.getId()) , new Double(calBeetleScore(b , Move.values()[j])));
+                for (int j = 0; j < 3; j++) {
+                    moveScore[j].put(new Integer(b.getId()), new Double(calBeetleScore(b, Move.values()[j])));
                 System.out.print("\t");
                 System.out.print(Move.values()[j]);
                 System.out.print(" -> ");
                 System.out.print(moveScore[j].get(b.getId()));
-            }
+                }
             System.out.println();
 
 
-        }
-        double maxScore = -100000000;
-        int[] bestJ = new int[18];
-        int[] bestK = new int[18];
-        for (int i = 0;i < 18;i++){
-
-            maxScore = 0;
-            int minChange = 0 ;
-            for (Cell c  : game.getMap().getMyCells()){
-                if (c == null) continue;
-                Beetle b = (Beetle) c.getBeetle();
-                if (states[i].compareTo(cellState(c)) == 0 || states[i+18].compareTo(cellState(c)) == 0){
-                    double s1 = moveScore[1].get(b.getId());
-                    double s2 = moveScore[1].get(b.getId());
-                    maxScore += Math.max(s1 , s2);
-                    if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon){
-                        minChange++;
-                    }else if (states[i+18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon){
-                        minChange++;
-                    }
-
-                }
             }
-            bestJ[i] = 1;
-            bestK[i] = 1;
+            double maxScore = -100000000;
+            int[] bestJ = new int[18];
+            int[] bestK = new int[18];
+            for (int i = 0; i < 18; i++) {
+
+                maxScore = 0;
+                int minChange = 0;
+                for (Cell c : game.getMap().getMyCells()) {
+                    if (c == null) continue;
+                    Beetle b = (Beetle) c.getBeetle();
+                    if (states[i].compareTo(cellState(c)) == 0 || states[i + 18].compareTo(cellState(c)) == 0) {
+                        double s1 = moveScore[1].get(b.getId());
+                        double s2 = moveScore[1].get(b.getId());
+                        maxScore += Math.max(s1, s2);
+                        if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon) {
+                            minChange++;
+                        } else if (states[i + 18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon) {
+                            minChange++;
+                        }
+
+                    }
+                }
+                bestJ[i] = 1;
+                bestK[i] = 1;
 
 
-            for (int j = 0;j < 3;j++){
-                for (int k = 0;k < 3;k++){
-                    double score = 0;
-                    int change = 0;
-                    for (Cell c  : game.getMap().getMyCells()){
-                        if (c == null) continue;
-                        Beetle b = (Beetle) c.getBeetle();
-                        if (states[i].compareTo(cellState(c)) == 0 || states[i+18].compareTo(cellState(c)) == 0){
-                            double s1 = moveScore[j].get(b.getId());
-                            double s2 = moveScore[k].get(b.getId());
-                            score += Math.max(s1 , s2);
-                            if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon){
-                                change++;
-                            }else if (states[i+18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon){
-                                change++;
+                for (int j = 0; j < 3; j++) {
+                    for (int k = 0; k < 3; k++) {
+                        double score = 0;
+                        int change = 0;
+                        for (Cell c : game.getMap().getMyCells()) {
+                            if (c == null) continue;
+                            Beetle b = (Beetle) c.getBeetle();
+                            if (states[i].compareTo(cellState(c)) == 0 || states[i + 18].compareTo(cellState(c)) == 0) {
+                                double s1 = moveScore[j].get(b.getId());
+                                double s2 = moveScore[k].get(b.getId());
+
+                                if (s1 > s2 + epsilon){
+                                    score += s1;
+                                }else if(s2 > s1 + epsilon){
+                                    score += s2;
+                                }else{
+                                    if (states[i].compareTo(cellState(c)) == 0){
+                                        score += s1;
+                                    }else if (states[i + 18].compareTo(cellState(c)) == 0){
+                                        score += s2;
+                                    }
+                                }
+
+
+                                if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon) {
+                                    change++;
+                                } else if (states[i + 18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon) {
+                                    change++;
+                                }
                             }
                         }
-                    }
-                    if (score > maxScore + epsilon){
-                        maxScore = score;
-                        bestJ[i] = j;
-                        bestK[i] = k;
-                        minChange = change;
-                    }
-                    else if (score < maxScore + epsilon && score > maxScore - epsilon){
-                        if (bestJ[i] == 1 && bestK[i] == 1) continue;
-                        if ((j == 1 || k == 1) && bestJ[i] != 1 && bestK[i]!= 1){
+                        if (score > maxScore + epsilon) {
                             maxScore = score;
                             bestJ[i] = j;
                             bestK[i] = k;
                             minChange = change;
-                        }else if (j == 1 || k == 1){
-                            if (change < minChange){
+                        } else if (score < maxScore + epsilon && score > maxScore - epsilon) {
+                            if (bestJ[i] == 1 && bestK[i] == 1) continue;
+                            if ((j == 1 || k == 1) && bestJ[i] != 1 && bestK[i] != 1) {
                                 maxScore = score;
                                 bestJ[i] = j;
                                 bestK[i] = k;
                                 minChange = change;
+                            } else if (j == 1 || k == 1) {
+                                if (change < minChange) {
+                                    maxScore = score;
+                                    bestJ[i] = j;
+                                    bestK[i] = k;
+                                    minChange = change;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
 
         System.out.println("______");
@@ -999,49 +1010,60 @@ public class AI {
         System.out.println();
 
 
-        for (int i = 0;i < 18;i++){
-            for (Cell c : game.getMap().getMyCells()){
-                if (c == null) continue;
-                if (states[i].compareTo(cellState(c)) == 0 || states[i + 18].compareTo(cellState(c)) == 0) {
-                    Beetle b = (Beetle) c.getBeetle();
-                    double s1 = moveScore[bestJ[i]].get(b.getId());
-                    double s2 = moveScore[bestK[i]].get(b.getId());
-                    if (s1 > s2 + epsilon) {
-                        if (b.getBeetleType().getValue() == 1) {
-                            game.changeType(b, BeetleType.values()[0]);
-                        }
-                    } else if (s2 > s1 + epsilon) {
-                        if (b.getBeetleType().getValue() == 0) {
-                            game.changeType(b, BeetleType.values()[1]);
-                        }
-                    } else {
-                        if (bestJ[i] == 1 && bestK[i] != 1) {
+        Boolean[] hasState = new Boolean[36];
+        for (int i = 0;i < 36;i++){
+            hasState[i] = false;
+        }
+
+            for (int i = 0; i < 18; i++) {
+                for (Cell c : game.getMap().getMyCells()) {
+                    if (c == null) continue;
+                    if (states[i].compareTo(cellState(c)) == 0 || states[i + 18].compareTo(cellState(c)) == 0) {
+                        Beetle b = (Beetle) c.getBeetle();
+                        double s1 = moveScore[bestJ[i]].get(b.getId());
+                        double s2 = moveScore[bestK[i]].get(b.getId());
+                        BeetleType finalType = b.getBeetleType();
+                        if (s1 > s2 + epsilon) {
                             if (b.getBeetleType().getValue() == 1) {
                                 game.changeType(b, BeetleType.values()[0]);
+                                finalType = BeetleType.values()[0];
                             }
-                        } else if (bestJ[i] != 1 && bestK[i] == 1) {
+                        } else if (s2 > s1 + epsilon) {
                             if (b.getBeetleType().getValue() == 0) {
                                 game.changeType(b, BeetleType.values()[1]);
+                                finalType = BeetleType.values()[1];
+                            }
+                        } else {
+                            if (bestJ[i] == 1 && bestK[i] != 1) {
+                                if (b.getBeetleType().getValue() == 1) {
+                                    game.changeType(b, BeetleType.values()[0]);
+                                    finalType = BeetleType.values()[0];
+                                }
+                            } else if (bestJ[i] != 1 && bestK[i] == 1) {
+                                if (b.getBeetleType().getValue() == 0) {
+                                    game.changeType(b, BeetleType.values()[1]);
+                                    finalType = BeetleType.values()[1];
+                                }
                             }
                         }
+                        hasState[finalType.getValue() * 18 + i] = true;
                     }
                 }
             }
-        }
 
-        for (int i = 0;i < 18;i++){
-//            if (states[i].num() == 0)continue;
-            AI.myChangeStrategy(BeetleType.values()[0], states[i].X, states[i].Y, states[i].Z, Move.values()[bestJ[i]]);
-        }
+            for (int i = 0; i < 18; i++) {
+                if (!hasState[i])continue;
+                AI.myChangeStrategy(BeetleType.values()[0], states[i].X, states[i].Y, states[i].Z, Move.values()[bestJ[i]]);
+            }
 
-        for (int i = 0;i < 18;i++){
-//            if (states[i + 18].num() == 0)continue;
-            AI.myChangeStrategy(BeetleType.values()[1], states[i].X, states[i].Y, states[i].Z, Move.values()[bestK[i]]);
-        }
-
+            for (int i = 0; i < 18; i++) {
+                if (!hasState[i + 18])continue;
+                AI.myChangeStrategy(BeetleType.values()[1], states[i].X, states[i].Y, states[i].Z, Move.values()[bestK[i]]);
+            }
 
 
 //        System.out.println(game.getMyScore());
+//        }catch (Exception ignored){}
     }
 
 }
@@ -1103,15 +1125,15 @@ class Node{
         isVisited = true;
         lbl = level;
         for (Node neg : negs) {
-            if (neg == null){
-                System.out.println("EXCEPTION : { ");
-                System.out.println(row);
-                System.out.println(" , ");
-                System.out.println(col);
-                System.out.println(" , ");
-                System.out.println(dir);
-                System.out.println("}");
-            }
+//            if (neg == null){
+//                System.out.println("EXCEPTION : { ");
+//                System.out.println(row);
+//                System.out.println(" , ");
+//                System.out.println(col);
+//                System.out.println(" , ");
+//                System.out.println(dir);
+//                System.out.println("}");
+//            }
             if (!neg.getIsVisited()){
                 newQueue.push(neg);
 
