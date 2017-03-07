@@ -356,8 +356,12 @@ public class AI {
         }
         dis = dis * dis;
         if (dis == 0){
-            return -INF * getEatingScore(beetle);
+            return -INF * getKillingScore(beetle) * 0.999;
         }
+        if (dis == 1){
+            return - getKillingScore(beetle) * 0.999;
+        }
+
         return 0;
     }
 
@@ -971,6 +975,9 @@ public class AI {
                                 }
                             }
                         }
+                        score -= change * game.getConstants().getColorCost();
+                        if (j == strategies[0][states[i].X.getValue()][states[i].Y.getValue()][states[i].Z.getValue()]) score += game.getConstants().getUpdateCost();
+                        if (k == strategies[1][states[i].X.getValue()][states[i].Y.getValue()][states[i].Z.getValue()]) score += game.getConstants().getUpdateCost();
                         if (score > maxScore + epsilon) {
                             maxScore = score;
                             bestJ[i] = j;
@@ -1034,7 +1041,7 @@ public class AI {
                                 finalType = BeetleType.values()[1];
                             }
                         } else {
-                            if (bestJ[i] == 1 && bestK[i] != 1) {
+                            /*if (bestJ[i] == 1 && bestK[i] != 1) {
                                 if (b.getBeetleType().getValue() == 1) {
                                     game.changeType(b, BeetleType.values()[0]);
                                     finalType = BeetleType.values()[0];
@@ -1044,7 +1051,7 @@ public class AI {
                                     game.changeType(b, BeetleType.values()[1]);
                                     finalType = BeetleType.values()[1];
                                 }
-                            }
+                            }*/
                         }
                         hasState[finalType.getValue() * 18 + i] = true;
                     }
