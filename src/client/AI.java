@@ -26,6 +26,10 @@ public class AI {
     private static Beetle changingBeetle;
     private static Node[][][] nodes;
     private static Boolean isDone = false;
+    private static double stepForwardProb = 0.9;
+    private static double turnRightProb = 0.05;
+    private static double turnLeftProb = 0.05;
+    private static int numObserv = 20;
 
     private static void myChangeStrategy(BeetleType beetleType , CellState x , CellState y , CellState z , Move move){
         System.out.print("__!__");
@@ -41,11 +45,11 @@ public class AI {
 
         if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
-            System.out.println("done");
+//            System.out.println("done");
         }else{
             if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] != move.getValue()){
                 game.changeStrategy(beetleType , x , y , z , move);
-                System.out.println("done");
+//                System.out.println("done");
             }
         }
         strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] = move.getValue();
@@ -55,13 +59,10 @@ public class AI {
         return game;
     }
 
-    //calculates the score
-    public static double calScore(Beetle beetle, Move move, Beetle beetle2){
+    public static Position perfornMove(Beetle beetle , Move move){
         int w = game.getMap().getWidth();
         int h = game.getMap().getHeight();
-        double INF = 1000.0;
-        int dis = 0;
-        double dis1 = 0;
+        Position p = null;
         if (move.getValue() != 1){
             int directionValue = 0;
             switch (move.getValue()){
@@ -87,57 +88,53 @@ public class AI {
                     newDir = Direction.Down;
                     break;
             }
-//            System.out.print("{");
-//            System.out.print(beetle.getPosition().getX());
-//            System.out.print(",");
-//            System.out.print(beetle.getPosition().getY());
-//            System.out.print(",");
-//            System.out.print(beetle.getDirection().getValue());
-//            System.out.print(",");
-//            System.out.print(move.getValue());
-//            System.out.print("}");
-
-//            System.out.print("\t-->\t");
-
-//            System.out.print("{");
-//            System.out.print(beetle.getPosition().getX());
-//            System.out.print(",");
-//            System.out.print(beetle.getPosition().getY());
-//            System.out.print(",");
-//            System.out.print(newDir.getValue());
-//            System.out.print("}");
-            dis = distance(beetle.getPosition().getX(), beetle.getPosition().getY(), newDir, beetle2.getPosition().getX(), beetle2.getPosition().getY());
-            dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY(), beetle2.getDirection() , beetle.getPosition().getX() , beetle.getPosition().getY());
-//            System.out.print("\t-->\t");
-//            System.out.print(dis);
-//            System.out.println();
+            p = new Position(beetle.getPosition().getX(), beetle.getPosition().getY(), newDir);
         }
         else if (move.getValue() == 1){
 //            System.out.println(beetle2);
 //            System.out.println(beetle2.getPosition());
             switch (beetle.getDirection()){
                 case Right:
-                    dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w, beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
-                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w);
+                    p = new Position(beetle.getPosition().getX(), (beetle.getPosition().getY()+1)%w, beetle.getDirection());
                     break;
                 case Left:
-                    dis = distance(beetle.getPosition().getX(), (beetle.getPosition().getY()+w-1)%w, beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
-                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , beetle.getPosition().getX(), (beetle.getPosition().getY()+w-1)%w);
+                    p = new Position(beetle.getPosition().getX(), (beetle.getPosition().getY()+w-1)%w, beetle.getDirection());
                     break;
                 case Up:
-                    dis = distance((beetle.getPosition().getX()+h-1)%h, beetle.getPosition().getY(), beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
-                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , (beetle.getPosition().getX()+h-1)%h, beetle.getPosition().getY());
+                    p = new Position((beetle.getPosition().getX()+h-1)%h, beetle.getPosition().getY(), beetle.getDirection());
                     break;
                 case Down:
-                    dis = distance((beetle.getPosition().getX()+1)%h, beetle.getPosition().getY(), beetle.getDirection(), beetle2.getPosition().getX(), beetle2.getPosition().getY());
-                    dis1 = distance(beetle2.getPosition().getX(), beetle2.getPosition().getY() , beetle2.getDirection() , (beetle.getPosition().getX()+1)%h, beetle.getPosition().getY());
+                    p = new Position((beetle.getPosition().getX()+1)%h, beetle.getPosition().getY(), beetle.getDirection());
                     break;
             }
         }
-        int p = beetle.getPower();
-        if (move == Move.stepForward) p++;
+        return p;
+    }
+
+    //calculates the score
+
+    public static double calMovingEnemyScore(Beetle beetle , Move move , Beetle beetle2 , Move move2){
+        double INF = 1000.0;
+        int dis = 0;
+        double dis1 = 0;
+
+        Position p1 = perfornMove(beetle , move);
+        Position p2 = perfornMove(beetle2 , move2);
+
+        dis = distance(p1.getX() , p1.getY() , p1.getDirection() , p2.getX() , p2.getY());
+        dis1 = distance(p2.getX() , p2.getY() , p2.getDirection() , p1.getX() , p1.getY());
+
+        if (distance(beetle.getPosition().getX() , beetle.getPosition().getY() , beetle.getDirection() , p2.getX() , p2.getY()) == 0) dis = 0;
+        if (distance(beetle2.getPosition().getX() , beetle2.getPosition().getY() , beetle2.getDirection() , p1.getX() , p1.getY()) == 0) dis1 = 0;
+
+        int power1 = beetle.getPower();
+        int power2 = beetle2.getPower();
+
+        if (move == Move.stepForward) power1++;
+        if (move2 == Move.stepForward) power2++;
+
         if (dis1 > 3){
-            if (beetle.getPower() < beetle2.getPower()) {
+            if (power1 < power2) {
                 return 0;
             }
         }
@@ -146,30 +143,38 @@ public class AI {
 //        dis1 = dis;
         dis1 = dis1 * dis1;
         double r = game.getConstants().getPowerRatio();
-        if(beetle.getPower() > r * beetle2.getPower()){
+        if(power1 > r * power2){
             if (dis == 0)
                 return INF * getKillingScore(beetle2);
             return getKillingScore(beetle2) * 1.0 / dis;
         }
-        else if(beetle.getPower() > beetle2.getPower()){
+        else if(power1 > power2){
             if (dis == 0)
                 return INF * getKillingScore(beetle2);
-            return getKillingScore(beetle2) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle2.getPower() * dis * (r-1));
+            return getKillingScore(beetle2) * (double) (power1 - power2) / (power2 * dis * (r-1));
         }
-        else if(beetle.getPower() == beetle2.getPower()){
-            if (beetle.getPower() == 0) return 0.0;
+        else if(power1 == power2){
+            if (power1 == 0) return 0.0;
             return 0.0;
         }
-        else if(beetle.getPower() >   beetle2.getPower() / r){
+        else if(power1 >   power2 / r){
             if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
-            return getKillingScore(beetle) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle.getPower() * dis1 * (r-1));
+            return getKillingScore(beetle) * (double) (power1 - power2) / (power1 * dis1 * (r-1));
         }
         else{
             if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
             return -1.0 * getKillingScore(beetle) / dis1;
         }
+    }
+
+    public static double calScore(Beetle beetle, Move move, Beetle beetle2){
+        double res = 0;
+        res += stepForwardProb * calMovingEnemyScore(beetle , move , beetle2 , Move.stepForward);
+        res += turnLeftProb * calMovingEnemyScore(beetle , move , beetle2 , Move.turnLeft);
+        res += turnRightProb * calMovingEnemyScore(beetle , move , beetle2 , Move.turnRight);
+        return res;
     }
 
     public static double calPowerScore(Beetle beetle , Move move){
@@ -722,8 +727,8 @@ public class AI {
 
     public void doTurn(World game) {
 //        try {
-        System.out.println(game.getConstants().getColorCost());
-        System.out.println(changeTypeRemain);
+//        System.out.println(game.getConstants().getColorCost());
+//        System.out.println(changeTypeRemain);
         double epsilon = game.getConstants().getUpdateCost();
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
@@ -1131,7 +1136,6 @@ public class AI {
         }
 
 
-
 //        System.out.println(game.getMyScore());
 //        }catch (Exception ignored){}
     }
@@ -1302,5 +1306,29 @@ class StatesComparator implements Comparator<State>{
     public int compare(State s1, State s2)
     {
         return s2.value() - s1.value();
+    }
+}
+
+class Position{
+    private int x;
+    private int y;
+    private Direction direction;
+
+    Position(int x , int y , Direction direction){
+        this.x = x;
+        this.y = y;
+        this.direction = direction;
+    }
+
+    public int getX(){
+        return this.x;
+    }
+
+    public int getY(){
+        return this.y;
+    }
+
+    public Direction getDirection(){
+        return this.direction;
     }
 }
