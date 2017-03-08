@@ -22,6 +22,7 @@ public class AI {
     static Cell[][] cells;
     static int[][][][] strategies;
     private static HashMap<Integer , Integer> timeRemaining;
+    private static int changeTypeRemain;
     private static Beetle changingBeetle;
     private static Node[][][] nodes;
     private static Boolean isDone = false;
@@ -40,11 +41,11 @@ public class AI {
 
         if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] == -1){
             game.changeStrategy(beetleType , x , y , z , move);
-//            System.out.println("done");
+            System.out.println("done");
         }else{
             if (strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] != move.getValue()){
                 game.changeStrategy(beetleType , x , y , z , move);
-//                System.out.println("done");
+                System.out.println("done");
             }
         }
         strategies[beetleType.getValue()][x.getValue()][y.getValue()][z.getValue()] = move.getValue();
@@ -60,7 +61,7 @@ public class AI {
         int h = game.getMap().getHeight();
         double INF = 1000.0;
         int dis = 0;
-        int dis1 = 0;
+        double dis1 = 0;
         if (move.getValue() != 1){
             int directionValue = 0;
             switch (move.getValue()){
@@ -133,15 +134,19 @@ public class AI {
                     break;
             }
         }
+        int p = beetle.getPower();
+        if (move == Move.stepForward) p++;
         if (dis1 > 3){
             if (beetle.getPower() < beetle2.getPower()) {
                 return 0;
             }
         }
+        dis1 = (dis1 + dis) / 2.0;
         dis = dis * dis;
 //        dis1 = dis;
         dis1 = dis1 * dis1;
-        if(beetle.getPower() > 2 * beetle2.getPower()){
+        double r = game.getConstants().getPowerRatio();
+        if(beetle.getPower() > r * beetle2.getPower()){
             if (dis == 0)
                 return INF * getKillingScore(beetle2);
             return getKillingScore(beetle2) * 1.0 / dis;
@@ -149,22 +154,29 @@ public class AI {
         else if(beetle.getPower() > beetle2.getPower()){
             if (dis == 0)
                 return INF * getKillingScore(beetle2);
-            return getKillingScore(beetle2) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle2.getPower() * dis);
+            return getKillingScore(beetle2) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle2.getPower() * dis * (r-1));
         }
         else if(beetle.getPower() == beetle2.getPower()){
             if (beetle.getPower() == 0) return 0.0;
             return 0.0;
         }
-        else if(beetle.getPower() > 0.5 * beetle2.getPower()){
+        else if(beetle.getPower() >   beetle2.getPower() / r){
             if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
-            return getKillingScore(beetle) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle.getPower() * dis1);
+            return getKillingScore(beetle) * (double) (beetle.getPower() - beetle2.getPower()) / (beetle.getPower() * dis1 * (r-1));
         }
         else{
             if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
             return -1.0 * getKillingScore(beetle) / dis1;
         }
+    }
+
+    public static double calPowerScore(Beetle beetle , Move move){
+        double INF = 998.0;
+        if (move != Move.stepForward) return 0;
+        if (beetle.getPower() == 0) return INF * getKillingScore(beetle);
+        return getKillingScore(beetle) / beetle.getPower();
     }
 
     public static double getKillingScore(Beetle beetle){
@@ -222,7 +234,8 @@ public class AI {
             ans += calSlipperScore(beetle , move , (Slipper) c.getSlipper());
         }
 
-        ans /= oppCells.length;
+        ans += calPowerScore(beetle , move);
+
         return ans;
     }
 
@@ -355,6 +368,9 @@ public class AI {
             }
         }
         dis = dis * dis;
+        if (beetle.is_sick()){
+            return 0;
+        }
         if (dis == 0){
             return -INF * getKillingScore(beetle) * 0.999;
         }
@@ -706,6 +722,8 @@ public class AI {
 
     public void doTurn(World game) {
 //        try {
+        System.out.println(game.getConstants().getColorCost());
+        System.out.println(changeTypeRemain);
         double epsilon = game.getConstants().getUpdateCost();
         AI.game = game;
         // fill this method, we've presented a stupid AI for example!
@@ -735,6 +753,7 @@ public class AI {
 
         if (strategies == null) {
             strategies = new int[2][3][2][3];
+            changeTypeRemain  = game.getConstants().getChangeTypeLimit();
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 3; j++) {
                     for (int k = 0; k < 2; k++) {
@@ -915,9 +934,9 @@ public class AI {
                 System.out.print(moveScore[j].get(b.getId()));
             }
             System.out.println();
-
-
         }
+
+
         double maxScore = -100000000;
         int[] bestJ = new int[18];
         int[] bestK = new int[18];
@@ -931,10 +950,20 @@ public class AI {
                 if (states[i].compareTo(cellState(c)) == 0 || states[i + 18].compareTo(cellState(c)) == 0) {
                     double s1 = moveScore[1].get(b.getId());
                     double s2 = moveScore[1].get(b.getId());
-                    maxScore += Math.max(s1, s2);
-                    if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon) {
+                    if (s1 > s2 + epsilon && changeTypeRemain > 0){
+                        maxScore += s1;
+                    }else if(s2 > s1 + epsilon && changeTypeRemain > 0){
+                        maxScore += s2;
+                    }else{
+                        if (states[i].compareTo(cellState(c)) == 0){
+                            maxScore += s1;
+                        }else if (states[i + 18].compareTo(cellState(c)) == 0){
+                            maxScore += s2;
+                        }
+                    }
+                    if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0) {
                         minChange++;
-                    } else if (states[i + 18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon) {
+                    } else if (states[i + 18].compareTo(cellState(c)) == 0 && s1 > s2 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0) {
                         minChange++;
                     }
 
@@ -942,12 +971,15 @@ public class AI {
             }
             bestJ[i] = 1;
             bestK[i] = 1;
+            int num1best = 0;
 
 
             for (int j = 0; j < 3; j++) {
                 for (int k = 0; k < 3; k++) {
                     double score = 0;
                     int change = 0;
+                    int numLow = 0;
+                    int numHigh = 0;
                     for (Cell c : game.getMap().getMyCells()) {
                         if (c == null) continue;
                         Beetle b = (Beetle) c.getBeetle();
@@ -955,47 +987,58 @@ public class AI {
                             double s1 = moveScore[j].get(b.getId());
                             double s2 = moveScore[k].get(b.getId());
 
-                            if (s1 > s2 + epsilon){
+                            if (s1 > s2 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0){
+                                numLow++;
                                 score += s1;
-                            }else if(s2 > s1 + epsilon){
+                            }else if(s2 > s1 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0){
                                 score += s2;
+                                numHigh++;
                             }else{
                                 if (states[i].compareTo(cellState(c)) == 0){
                                     score += s1;
+                                    numLow++;
                                 }else if (states[i + 18].compareTo(cellState(c)) == 0){
                                     score += s2;
+                                    numHigh++;
                                 }
                             }
 
 
-                            if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + epsilon) {
+                            if (states[i].compareTo(cellState(c)) == 0 && s2 > s1 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0) {
                                 change++;
-                            } else if (states[i + 18].compareTo(cellState(c)) == 0 && s1 > s2 + epsilon) {
+                            } else if (states[i + 18].compareTo(cellState(c)) == 0 && s1 > s2 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0) {
                                 change++;
                             }
                         }
                     }
-                    score -= change * game.getConstants().getColorCost();
-                    if (j == strategies[0][states[i].X.getValue()][states[i].Y.getValue()][states[i].Z.getValue()]) score += game.getConstants().getUpdateCost();
-                    if (k == strategies[1][states[i].X.getValue()][states[i].Y.getValue()][states[i].Z.getValue()]) score += game.getConstants().getUpdateCost();
+                    score -= change * (game.getConstants().getColorCost());
+                    if (j == strategies[0][states[i].Z.getValue()][states[i].Y.getValue()][states[i].X.getValue()]) score += game.getConstants().getUpdateCost();
+                    if (k == strategies[1][states[i].Z.getValue()][states[i].Y.getValue()][states[i].X.getValue()]) score += game.getConstants().getUpdateCost();
+                    System.out.println("Peyman: "+Integer.toString(i)+" "+Integer.toString(j)+" score is "+Double.toString(score)+" change is "+Integer.toString(change));
+                    int num1 = 0;
+                    if (j == 1) num1+= numLow;
+                    if (k == 1) num1+= numHigh;
                     if (score > maxScore + epsilon) {
                         maxScore = score;
                         bestJ[i] = j;
                         bestK[i] = k;
                         minChange = change;
-                    } else if (score < maxScore + epsilon && score > maxScore - epsilon) {
-                        if (bestJ[i] == 1 && bestK[i] == 1) continue;
-                        if ((j == 1 || k == 1) && bestJ[i] != 1 && bestK[i] != 1) {
+                        num1best = num1;
+                    } else if (score > maxScore - epsilon) {
+                        if (num1best > num1) continue;
+                        else if (num1 > num1best) {
                             maxScore = score;
                             bestJ[i] = j;
                             bestK[i] = k;
                             minChange = change;
-                        } else if (j == 1 || k == 1) {
+                            num1best = num1;
+                        } else{
                             if (change < minChange) {
                                 maxScore = score;
                                 bestJ[i] = j;
                                 bestK[i] = k;
                                 minChange = change;
+                                num1best = num1;
                             }
                         }
                     }
@@ -1030,15 +1073,17 @@ public class AI {
                     double s1 = moveScore[bestJ[i]].get(b.getId());
                     double s2 = moveScore[bestK[i]].get(b.getId());
                     BeetleType finalType = b.getBeetleType();
-                    if (s1 > s2 + epsilon) {
+                    if (s1 > s2 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0) {
                         if (b.getBeetleType().getValue() == 1) {
                             game.changeType(b, BeetleType.values()[0]);
                             finalType = BeetleType.values()[0];
+                            changeTypeRemain--;
                         }
-                    } else if (s2 > s1 + epsilon) {
+                    } else if (s2 > s1 + game.getConstants().getColorCost() + epsilon && changeTypeRemain > 0) {
                         if (b.getBeetleType().getValue() == 0) {
                             game.changeType(b, BeetleType.values()[1]);
                             finalType = BeetleType.values()[1];
+                            changeTypeRemain--;
                         }
                     } else {
                             /*if (bestJ[i] == 1 && bestK[i] != 1) {
@@ -1067,6 +1112,24 @@ public class AI {
             if (!hasState[i + 18])continue;
             AI.myChangeStrategy(BeetleType.values()[1], states[i].X, states[i].Y, states[i].Z, Move.values()[bestK[i]]);
         }
+
+        if (changeTypeRemain == 0){
+            System.out.println("ran out of changes!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            for (int i = 0;i < 18;i++){
+                for (Cell c : game.getMap().getMyCells()){
+                    if (c == null) continue;
+                    Beetle b = (Beetle) c.getBeetle();
+                    if (states[i].compareTo(cellState(c)) == 0){
+                        for (int j = 0;j < 3;j++){
+                            if (moveScore[j].get(b.getId()) > moveScore[bestJ[i]].get(b.getId()) + game.getConstants().getDetMoveCost()){
+                                game.deterministicMove(b , Move.values()[j]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
 
 //        System.out.println(game.getMyScore());
