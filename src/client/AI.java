@@ -121,17 +121,17 @@ public class AI {
         Position p1 = perfornMove(beetle , move);
         Position p2 = perfornMove(beetle2 , move2);
 
+        int power1 = beetle.getPower();
+        int power2 = beetle2.getPower();
+
         dis = distance(p1.getX() , p1.getY() , p1.getDirection() , p2.getX() , p2.getY());
         dis1 = distance(p2.getX() , p2.getY() , p2.getDirection() , p1.getX() , p1.getY());
 
         if (distance(beetle.getPosition().getX() , beetle.getPosition().getY() , beetle.getDirection() , p2.getX() , p2.getY()) == 0) dis = 0;
         if (distance(beetle2.getPosition().getX() , beetle2.getPosition().getY() , beetle2.getDirection() , p1.getX() , p1.getY()) == 0) dis1 = 0;
 
-        int power1 = beetle.getPower();
-        int power2 = beetle2.getPower();
-
-        if (move == Move.stepForward) power1++;
-        if (move2 == Move.stepForward) power2++;
+ //       if (move == Move.stepForward) power1++;
+ //       if (move2 == Move.stepForward) power2++;
 
         if (dis1 > 3){
             if (power1 < power2) {
@@ -154,15 +154,21 @@ public class AI {
             return getKillingScore(beetle2) * (double) (power1 - power2) / (power2 * dis * (r-1));
         }
         else if(power1 == power2){
+            if(beetle.getRow()==14 && beetle.getColumn()==4 && beetle2.getRow()==0 && beetle2.getColumn()==4)
+                System.out.print("*");
             if (power1 == 0) return 0.0;
             return 0.0;
         }
         else if(power1 >   power2 / r){
+            if(beetle.getRow()==14 && beetle.getColumn()==4 && beetle2.getRow()==0 && beetle2.getColumn()==4)
+                System.out.print("#");
             if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
             return getKillingScore(beetle) * (double) (power1 - power2) / (power1 * dis1 * (r-1));
         }
         else{
+            if(beetle.getRow()==14 && beetle.getColumn()==4 && beetle2.getRow()==0 && beetle2.getColumn()==4)
+                System.out.print(" "+power1+"&"+power2+" ");
             if (dis1 == 0)
                 return -INF * getKillingScore(beetle);
             return -1.0 * getKillingScore(beetle) / dis1;
@@ -171,14 +177,18 @@ public class AI {
 
     public static double calScore(Beetle beetle, Move move, Beetle beetle2){
         double res = 0;
-        res += stepForwardProb * calMovingEnemyScore(beetle , move , beetle2 , Move.stepForward);
-        res += turnLeftProb * calMovingEnemyScore(beetle , move , beetle2 , Move.turnLeft);
-        res += turnRightProb * calMovingEnemyScore(beetle , move , beetle2 , Move.turnRight);
+        if(beetle.getPower() >= beetle2.getPower()) {
+            res += stepForwardProb * calMovingEnemyScore(beetle, move, beetle2, Move.stepForward);
+            res += turnLeftProb * calMovingEnemyScore(beetle, move, beetle2, Move.turnLeft);
+            res += turnRightProb * calMovingEnemyScore(beetle, move, beetle2, Move.turnRight);
+        }
+        else
+            res = Math.min(calMovingEnemyScore(beetle, move, beetle2, Move.stepForward),Math.min(calMovingEnemyScore(beetle, move, beetle2, Move.turnLeft),calMovingEnemyScore(beetle, move, beetle2, Move.turnRight)));
         return res;
     }
 
     public static double calPowerScore(Beetle beetle , Move move){
-        double INF = 998.0;
+        double INF = 898.0;
         if (move != Move.stepForward) return 0;
         if (beetle.getPower() == 0) return INF * getKillingScore(beetle);
         return getKillingScore(beetle) / beetle.getPower();
@@ -217,6 +227,7 @@ public class AI {
 //            System.out.println(b.getPosition());
 //            System.out.println(c.getBeetle().getPosition());
 //            System.out.println(calScore(beetle, move, b));
+
             ans += calScore(beetle, move, b);
         }
 
@@ -239,7 +250,9 @@ public class AI {
             ans += calSlipperScore(beetle , move , (Slipper) c.getSlipper());
         }
 
-        ans += calPowerScore(beetle , move);
+        double tmp= calPowerScore(beetle , move);
+        ans += tmp;
+        System.out.print("power: "+tmp);
 
         return ans;
     }
@@ -1019,7 +1032,7 @@ public class AI {
                     score -= change * (game.getConstants().getColorCost());
                     if (j == strategies[0][states[i].Z.getValue()][states[i].Y.getValue()][states[i].X.getValue()]) score += game.getConstants().getUpdateCost();
                     if (k == strategies[1][states[i].Z.getValue()][states[i].Y.getValue()][states[i].X.getValue()]) score += game.getConstants().getUpdateCost();
-                    System.out.println("Peyman: "+Integer.toString(i)+" "+Integer.toString(j)+" score is "+Double.toString(score)+" change is "+Integer.toString(change));
+                    //System.out.println("Peyman: "+Integer.toString(i)+" "+Integer.toString(j)+" score is "+Double.toString(score)+" change is "+Integer.toString(change));
                     int num1 = 0;
                     if (j == 1) num1+= numLow;
                     if (k == 1) num1+= numHigh;
